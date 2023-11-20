@@ -19,10 +19,10 @@ def openImage(fileName):
 def redrawAll(app):
     
     drawImage(app.gameBackground, 0,0)
-    drawImage(app.startButton, app.width//2 - app.startButtonWidth//2, app.height//2)
+    drawImage(app.startButton, app.width//2- app.startButtonWidth//2, app.height//2)
 
 def onMousePress(app, mouseX, mouseY):
-    if distance(mouseX, mouseY, app.width//2, app.height//2, app.startButtonWidth, app.startButtonHeight):
+    if distance(mouseX, mouseY, app.width//2- app.startButtonWidth//2, app.height//2, app.startButtonWidth, app.startButtonHeight):
         app.gameBackground = openImage("assets/gameStarted.png")
         app.gameBackground = CMUImage(app.gameBackground)
          
