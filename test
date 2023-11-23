@@ -1,0 +1,24 @@
+# level1 = open("level1.txt", "w")
+# levelRows = 20
+# levelCols = 40
+# level = []
+
+# for row in range(levelRows):
+#     if row < 19:
+#         level.append([-1] * levelCols)
+#     else:
+#         level.append([2] * levelCols)
+
+# #making bottom row of tiles 
+
+# print(level)
+# for row in level:
+#     for item in row:
+#         level1.write(str(item) + " ")
+#     level1.write("\n")
+    
+# level1.close()        
+# # level.write(level)
+# # print(level.read)
+
+

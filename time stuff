@@ -1,0 +1,7 @@
+import time
+startTime = time.time()
+count = 0
+for i in range(87877878):
+    count += 1
+endTime = time.time() - startTime
+print(endTime)
