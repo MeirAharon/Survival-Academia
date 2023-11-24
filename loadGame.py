@@ -10,7 +10,7 @@ def onAppStart(app):
     createLevel(app)
     createFrame(app)
     createPlayer(app)
-    
+    createCollisionBoard(app)
     app.playState = True
     app.spriteCounter = 0
     app.stepsPerSecond = 60
@@ -41,31 +41,16 @@ def createLevel(app):
             app.level.append([2] * app.levelCols)
     app.level[app.levelRows-2][app.levelCols // 2] = 2 # this is random block for testing
     app.rectList = []
-    app.tileDict = dict()
     app.tileList = []
-    numPixels = 0
-    widthCounter = 0
-    heightCounter = 0
-    numPixels = int(app.tileWidth * app.tileHeight)
     for row in range(len(app.level)):
         for col in range(len(app.level[row])):
+            
             if app.level[row][col] != -1:
                 x = int(col * app.tileWidth)
                 y = int(row * app.tileHeight)
                 
-                app.tileDict[(row, col)] = Tile(x, y, app.level[row][col])
                 app.tileList.append(Tile(x, y, app.level[row][col]))
-                for i in range(numPixels):
-                    app.tileDict[(x,y)] = 'Tile'
-                    if widthCounter <= int(app.tileWidth):
-                        widthCounter += 1
-                        x += 1
-                    else:
-                        widthCounter = 0
-                        x -= int(app.tileWidth)
-                        heightCounter += 1
-                        y += 1    
-    
+                
 def createFrame(app):
     app.frameRight = False
     app.frameLeft = False
@@ -74,7 +59,20 @@ def createFrame(app):
   
 def createPlayer(app):
     app.meir = Player(10, 0, 7)    
-     
+
+def createCollisionBoard(app):
+    
+    app.tileDict = dict()
+    cols = int(app.width // Player.width)
+    rows = int(app.height // Player.height)
+    for row in range(rows):
+        for col in range(cols):
+            app.tileDict[(row, col)] = []
+    for tile in app.tileList:
+        row = int(tile.y // Player.height)
+        col = int(tile.x // Player.width)
+        app.tileDict[(row,col)].append(tile)            
+                  
 def setFrame(app):
     
     if app.frameRight:

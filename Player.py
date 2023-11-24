@@ -1,8 +1,11 @@
 from cmu_graphics import *
 from PIL import Image
 import os, pathlib, time
+from Tile import *
 
 class Player():
+    width = 40
+    height = 70
     def __init__(self, x, y, movementSpeed):
         self.movementSpeed = movementSpeed
         self.moving = False
@@ -15,6 +18,7 @@ class Player():
         self.prevPosX = x
         self.prevPosY = y
         self.posX = x
+        self.distance =0 #test variable
         self.posY = y
         self.futurePosX = 0
         self.futurePosY = 0
@@ -31,6 +35,7 @@ class Player():
         self.sprites = []
         self.playerRectSize = []
         self.spritestrip = openImage("assets/Swordsman_spritelist2.png")
+        self.yCollide = 0
 
         for i in range(0, 8):
             sprite = CMUImage(self.spritestrip.crop((45*i, 0, 45+45*i, 75)))
@@ -81,32 +86,43 @@ class Player():
             if self.moveRight == True:
                 self.spriteCounter = (1 + self.spriteCounter) % len(self.sprites)
                 self.posX += self.movementSpeed
-        if Player.checkCollisions(self, 'right'):        
+        if Player.checkCollisions(self, 'left'):        
             if self.moveLeft == True:
                 self.spriteCounter = (1 + self.spriteCounter) % len(self.sprites)
                 self.posX -= self.movementSpeed   
         if Player.checkCollisions(self, 'bottom'):
             if self.gravity == True:
-                self.posY += self.gravityStrength
+                self.posY += self.gravityStrength     
         if Player.checkCollisions(self, 'top'):        
             if self.jumping == True:
                 self.posY += self.jumpHeight         
 
     def checkCollisions(self, axis):
-
         if axis == 'right' or axis == 'left':
             Player.futurePosition(self, 'x')
-            for tile in app.tileList:
-                if Player.rectanglesOverlap(self.futurePosX, self.posY, self.width, self.height, 
-                                         tile.x, tile.y, app.tileWidth, app.tileHeight):
-                    return False
+            col = int(self.futurePosX // self.width)
+            row = int(self.posY // self.height)
+            if row > 0 and col > 0:
+                for i in range(-1, 2):
+                    for j in range(-1, 2):
+                        for object in app.tileDict[(row + i, col + j)]:
+                            if isinstance(object, Tile):
+                                    if Player.rectanglesOverlap(self.futurePosX, self.posY, self.width, self.height, 
+                                                                object.x, object.y, app.tileWidth, app.tileHeight):    
+                                        return False
             return True    
         if axis == 'top' or axis == 'bottom':
             Player.futurePosition(self, 'y')
-            for tile in app.tileList:
-                if Player.rectanglesOverlap(self.posX, self.futurePosY, self.width, self.height, 
-                                         tile.x, tile.y, app.tileWidth, app.tileHeight):
-                    return False
+            col = int(self.posX // self.width)
+            row = int(self.futurePosY // self.height)
+            if row > 0 and col > 0:
+                for i in range(-1, 2):
+                    for j in range(-1, 2):
+                        for object in app.tileDict[(row + i, col + j)]:
+                            if isinstance(object, Tile):
+                                    if Player.rectanglesOverlap(self.posX, self.futurePosY, self.width, self.height, 
+                                                                object.x, object.y, app.tileWidth, app.tileHeight): 
+                                        return False
             return True    
     
     def rectanglesOverlap(left1, top1, width1, height1,
@@ -116,6 +132,10 @@ class Player():
         right1 = left1 + width1
         right2 = left2 + width2
         return bottom1 >= top2 and bottom2 >= top1 and right1 >= left2 and right2 >= left1
+    def distanceBetweenRects(x1, y1, x2, y2):
+        distance = max(((x2 - x1)/2 , (y2 - y1)/2))
+        print(distance)
+        return distance
         
     def futurePosition(self, axis):
 
@@ -134,7 +154,7 @@ class Player():
     def drawPlayer(self):
         
         drawImage(self.sprites[self.spriteCounter], self.posX, self.posY)
-        # drawRect(self.posX, self.posY, self.width, self.height, fill = None, border = 'black' ) 
+        drawRect(self.posX, self.posY, self.width, self.height, fill = None, border = 'black' ) 
 
 def openImage(fileName):
         return Image.open(os.path.join(pathlib.Path(__file__).parent,fileName))                
