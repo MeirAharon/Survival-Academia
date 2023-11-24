@@ -18,7 +18,6 @@ def onAppStart(app):
 
 def createMenu(app):
 
-    
     app.menuBackground = openImage("assets/menuBackground.png")
     app.startButton = openImage("assets/startButton.png")
     app.startButtonWidth, app.startButtonHeight = app.startButton.width, app.startButton.height
@@ -30,10 +29,9 @@ def createLevel(app):
     app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
     app.levelBackground = CMUImage(app.levelBackground)
     app.levelRows = 18
-    app.levelCols = 20
+    app.levelCols = 28
     app.tileWidth =  app.width / app.levelCols
     app.tileHeight = app.height / app.levelRows
-    
     app.level =  []
 
     for row in range(app.levelRows):
@@ -42,7 +40,7 @@ def createLevel(app):
         else:
             app.level.append([2] * app.levelCols)
     app.level[app.levelRows-2][app.levelCols // 2] = 2 # this is random block for testing
-    
+    app.rectList = []
     app.tileDict = dict()
     app.tileList = []
     numPixels = 0
@@ -54,6 +52,7 @@ def createLevel(app):
             if app.level[row][col] != -1:
                 x = int(col * app.tileWidth)
                 y = int(row * app.tileHeight)
+                
                 app.tileDict[(row, col)] = Tile(x, y, app.level[row][col])
                 app.tileList.append(Tile(x, y, app.level[row][col]))
                 for i in range(numPixels):
@@ -66,8 +65,6 @@ def createLevel(app):
                         x -= int(app.tileWidth)
                         heightCounter += 1
                         y += 1    
-
-    print(len(app.tileDict), app.tileWidth )
     
 def createFrame(app):
     app.frameRight = False
@@ -76,7 +73,7 @@ def createFrame(app):
     app.frameSpeed = 5
   
 def createPlayer(app):
-    app.meir = Player(10, 0, 3)    
+    app.meir = Player(10, 0, 7)    
      
 def setFrame(app):
     
@@ -112,7 +109,6 @@ def redrawAll(app):
         rectWidth, rectHeight = app.meir.playerRectSize[0]  
         drawLabel(f'v({app.meir.velocity} pixels per second)', app.meir.posX + rectWidth, app.meir.posY + rectHeight + 20, size = 30)
         
-      
 def onMousePress(app, mouseX, mouseY):
     if not app.playState and clickDistance(mouseX, mouseY, app.width//2 - app.startButtonWidth//2,
                                        app.height//2, app.startButtonWidth, app.startButtonHeight):
@@ -141,30 +137,11 @@ def onStep(app):
 def openImage(fileName):
         return Image.open(os.path.join(pathlib.Path(__file__).parent,fileName))
  
-def rectanglesOverlap(left1, top1, width1, height1,
-                            left2, top2, width2, height2):
-    bottom1 = top1 + height1
-    bottom2 = top2 + height2
-    right1 = left1 + width1
-    right2 = left2 + width2
-    return bottom1 >= top2 and bottom2 >= top1 and right1 >= left2 and right2 >= left1
-
-
 def clickDistance(mouseX, mouseY, x, y, width, height):
     if (x <= mouseX <= x+width) and (y <= mouseY <= y+height):
         return True 
     
 def main():
     runApp(width=1280,height=720)    
-
-    # def position(self, x, y):
-            
-    #     self.posX += x
-    #     self.posY += y
-    #     self.spriteNum = (1 + self.spriteNum) % len(self.sprites)
-    #     self.sprite = self.sprites[self.spriteNum]
-
-   
-        
     
 main()    

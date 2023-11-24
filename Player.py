@@ -11,20 +11,21 @@ class Player():
         self.jumping = False
         self.gravity = True
         self.jumpHeight = -40
-        self.gravityStrength = 3
+        self.gravityStrength = 15
         self.prevPosX = x
         self.prevPosY = y
         self.posX = x
         self.posY = y
         self.futurePosX = 0
         self.futurePosY = 0
+        self.movementBufferX = 3
         self.vX = 0
         self.vY = 0
         self.gX = 0
         self.gY = 1
         self.velocity = 0
-        self.width = 45
-        self.height = 75
+        self.width = 40
+        self.height = 70
         self.spriteDirection = 'right'
         self.spriteCounter = 0
         self.sprites = []
@@ -37,8 +38,7 @@ class Player():
             self.playerRectSize.append((sprite.image.width, sprite.image.height))
             self.sprite = self.sprites[0]    
 
-        self.width, self.height = self.playerRectSize[0]
-            
+        # self.width, self.height = self.playerRectSize[0]
 
     def calculateVelocity(self):
         #this is called from onstep() so time is accounted for 
@@ -76,14 +76,7 @@ class Player():
             self.jumping = False  
     
     def updatePlayer(self):
-        
-        #checking posY
-        if Player.checkCollisions(self, 'bottom'):
-            if self.gravity == True:
-                self.posY += self.gravityStrength
-        if Player.checkCollisions(self, 'top'):        
-            if self.jumping == True:
-                self.posY += self.jumpHeight     
+    
         if Player.checkCollisions(self, 'right'):        
             if self.moveRight == True:
                 self.spriteCounter = (1 + self.spriteCounter) % len(self.sprites)
@@ -92,59 +85,56 @@ class Player():
             if self.moveLeft == True:
                 self.spriteCounter = (1 + self.spriteCounter) % len(self.sprites)
                 self.posX -= self.movementSpeed   
+        if Player.checkCollisions(self, 'bottom'):
+            if self.gravity == True:
+                self.posY += self.gravityStrength
+        if Player.checkCollisions(self, 'top'):        
+            if self.jumping == True:
+                self.posY += self.jumpHeight         
 
     def checkCollisions(self, axis):
-        
-        if axis == 'bottom' or axis == 'top':
-            Player.futurePosition(self, 'y')
-            # print('position:', (self.posX, self.futurePosY), app.tileDict.keys())
-            if ((self.posX, self.futurePosY) in app.tileDict or (self.posX + self.width, self.futurePosY) in app.tileDict or
-                (self.posX + self.width, self.futurePosY + self.height) in app.tileDict or(self.posX, self.futurePosY + self.height) in app.tileDict):
-                self.futurePosY = self.posY
-                # print((self.posX, self.futurePosY))
-                return False
-            return True
-        
+
         if axis == 'right' or axis == 'left':
             Player.futurePosition(self, 'x')
-            
-            if ((self.futurePosX, self.posY) in app.tileDict or (self.futurePosX + self.width, self.posY) in app.tileDict or
-                (self.futurePosX + self.width, self.posY + self.height) in app.tileDict or (self.futurePosX, self.posY + self.height) in app.tileDict):
-                
-                return False
-            
-            return True
+            for tile in app.tileList:
+                if Player.rectanglesOverlap(self.futurePosX, self.posY, self.width, self.height, 
+                                         tile.x, tile.y, app.tileWidth, app.tileHeight):
+                    return False
+            return True    
+        if axis == 'top' or axis == 'bottom':
+            Player.futurePosition(self, 'y')
+            for tile in app.tileList:
+                if Player.rectanglesOverlap(self.posX, self.futurePosY, self.width, self.height, 
+                                         tile.x, tile.y, app.tileWidth, app.tileHeight):
+                    return False
+            return True    
+    
+    def rectanglesOverlap(left1, top1, width1, height1,
+                            left2, top2, width2, height2):
+        bottom1 = top1 + height1
+        bottom2 = top2 + height2
+        right1 = left1 + width1
+        right2 = left2 + width2
+        return bottom1 >= top2 and bottom2 >= top1 and right1 >= left2 and right2 >= left1
         
     def futurePosition(self, axis):
+
+        if axis == 'x':        
+            if self.moveRight == True:
+                self.futurePosX = self.posX + self.movementSpeed
+            elif self.moveLeft == True:
+                self.futurePosX = self.posX - self.movementSpeed 
         
-        if axis == 'y':
+        elif axis == 'y':
             if self.gravity == True:
                 self.futurePosY = self.posY + self.gravityStrength
             if self.jumping == True:
                 self.futurePosY = self.posY + self.jumpHeight + self.gravityStrength    
-                
-        elif axis == 'x':        
-            if self.moveRight == True:
-                self.futurePosX = self.posX + self.movementSpeed
-            elif self.moveLeft == True:
-                self.futurePosX = self.posX - self.movementSpeed
-    
 
     def drawPlayer(self):
-        #player sprite
-        drawImage(self.sprites[self.spriteCounter], self.posX, self.posY)
-        #rect for logic like collisions
         
-        drawRect(self.posX, self.posY, self.width, self.height, fill = None, border = 'black' ) 
-
-                
+        drawImage(self.sprites[self.spriteCounter], self.posX, self.posY)
+        # drawRect(self.posX, self.posY, self.width, self.height, fill = None, border = 'black' ) 
 
 def openImage(fileName):
         return Image.open(os.path.join(pathlib.Path(__file__).parent,fileName))                
-
-# def calculateVelocity(app):
-#             #this is called from onstep() so time is accounted for 
-#             self.vX = (self.prevPosX - self.posX) 
-#             self.vY = (self.prevPosY - self.posY)  
-#             self.prevPosX = self.posX
-#             self.prevPosY = self.posY
