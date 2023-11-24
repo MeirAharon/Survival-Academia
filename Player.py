@@ -8,7 +8,9 @@ class Player():
         self.moving = False
         self.moveRight = False
         self.moveLeft = False
+        self.jumping = False
         self.gravity = True
+        self.jumpHeight = -40
         self.gravityStrength = 3
         self.prevPosX = x
         self.prevPosY = y
@@ -23,16 +25,17 @@ class Player():
         self.velocity = 0
         self.width = 45
         self.height = 75
-        self.spriteNum = 0
+        self.spriteDirection = 'right'
+        self.spriteCounter = 0
         self.sprites = []
         self.playerRectSize = []
-        spritestrip = openImage("assets/Swordsman_spritelist.png")
+        self.spritestrip = openImage("assets/Swordsman_spritelist2.png")
 
-        for i in range(0, 5):
-            sprite = CMUImage(spritestrip.crop((45*i, 0, 45+45*i, 75)))
+        for i in range(0, 8):
+            sprite = CMUImage(self.spritestrip.crop((45*i, 0, 45+45*i, 75)))
             self.sprites.append(sprite)
             self.playerRectSize.append((sprite.image.width, sprite.image.height))
-            self.sprite = self.sprites[0]
+            self.sprite = self.sprites[0]    
 
         self.width, self.height = self.playerRectSize[0]
             
@@ -49,71 +52,90 @@ class Player():
         if 'right' in keys:
             self.moving = True
             self.moveRight = True
-        elif 'left' in keys:    
+        if 'left' in keys:    
             self.moving = True
             self.moveLeft = True
-        elif 'down' in keys: 
+        if 'down' in keys: 
             self.moving = True
             self.crouch = True
-        elif 'up' in keys:
+        if 'up' in keys:
             self.moving = True
             self.jumping = True
         # checking if player has released the key
         if 'right' == key:
             self.moving = False
             self.moveRight = False
-        elif 'left' == key:    
+        if 'left' == key:    
             self.moving = False
             self.moveLeft = False
-        elif 'down' == key: 
+        if 'down' == key: 
             self.moving = False
             self.crouch = False
-        elif 'up' == key:
+        if 'up' == key:
             self.moving = False
             self.jumping = False  
     
     def updatePlayer(self):
+        
         #checking posY
-        if Player.checkCollisions(self, 'y'):
+        if Player.checkCollisions(self, 'bottom'):
             if self.gravity == True:
-                self.posY += self.gravityStrength 
-        if Player.checkCollisions(self, 'x'):        
+                self.posY += self.gravityStrength
+        if Player.checkCollisions(self, 'top'):        
+            if self.jumping == True:
+                self.posY += self.jumpHeight     
+        if Player.checkCollisions(self, 'right'):        
             if self.moveRight == True:
+                self.spriteCounter = (1 + self.spriteCounter) % len(self.sprites)
                 self.posX += self.movementSpeed
-            elif self.moveLeft == True:
+        if Player.checkCollisions(self, 'right'):        
+            if self.moveLeft == True:
+                self.spriteCounter = (1 + self.spriteCounter) % len(self.sprites)
                 self.posX -= self.movementSpeed   
 
     def checkCollisions(self, axis):
-        if axis == 'y':
+        
+        if axis == 'bottom' or axis == 'top':
             Player.futurePosition(self, 'y')
-            if ((int(self.futurePosY // app.tileHeight), int(self.posX // app.tileWidth)) in app.tileDict
-                    or int((self.futurePosY + self.height)// app.tileHeight), int((self.posX + self.width) // app.tileWidth)) in app.tileDict:
-                return False
-            print(int(self.futurePosY // app.tileHeight), int(self.futurePosX // app.tileWidth), self.posY // app.tileHeight, self.posX // app.tileWidth, self.posX, self.posY)
-            return True
-        if axis == 'x':
-            Player.futurePosition(self, 'x')
-            if ((int(self.posY // app.tileHeight), int(self.futurePosX // app.tileWidth)) in app.tileDict
-                    or int((self.posY + self.height)// app.tileHeight), int((self.futurePosX + self.width) // app.tileWidth)) in app.tileDict:
+            # print('position:', (self.posX, self.futurePosY), app.tileDict.keys())
+            if ((self.posX, self.futurePosY) in app.tileDict or (self.posX + self.width, self.futurePosY) in app.tileDict or
+                (self.posX + self.width, self.futurePosY + self.height) in app.tileDict or(self.posX, self.futurePosY + self.height) in app.tileDict):
+                self.futurePosY = self.posY
+                # print((self.posX, self.futurePosY))
                 return False
             return True
         
+        if axis == 'right' or axis == 'left':
+            Player.futurePosition(self, 'x')
+            
+            if ((self.futurePosX, self.posY) in app.tileDict or (self.futurePosX + self.width, self.posY) in app.tileDict or
+                (self.futurePosX + self.width, self.posY + self.height) in app.tileDict or (self.futurePosX, self.posY + self.height) in app.tileDict):
+                
+                return False
+            
+            return True
+        
     def futurePosition(self, axis):
+        
         if axis == 'y':
             if self.gravity == True:
                 self.futurePosY = self.posY + self.gravityStrength
+            if self.jumping == True:
+                self.futurePosY = self.posY + self.jumpHeight + self.gravityStrength    
+                
         elif axis == 'x':        
             if self.moveRight == True:
                 self.futurePosX = self.posX + self.movementSpeed
             elif self.moveLeft == True:
                 self.futurePosX = self.posX - self.movementSpeed
+    
 
     def drawPlayer(self):
         #player sprite
-        drawImage(self.sprite, self.posX, self.posY)
+        drawImage(self.sprites[self.spriteCounter], self.posX, self.posY)
         #rect for logic like collisions
-        rectWidth, rectHeight = self.playerRectSize[0]
-        drawRect(self.posX, self.posY, rectWidth, rectHeight, fill = None ) 
+        
+        drawRect(self.posX, self.posY, self.width, self.height, fill = None, border = 'black' ) 
 
                 
 

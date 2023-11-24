@@ -4,9 +4,9 @@ import os, pathlib, time
 
 class Tile():
     
-    def __init__(self, row, col, imgNum):
-        self.row = row
-        self.col = col
+    def __init__(self, x, y, imgNum):
+        self.x = x
+        self.y = y
         self.img = openImage(f"assets\\Tiles\\Tile_{imgNum}.png")
         self.img = CMUImage(self.img) 
 

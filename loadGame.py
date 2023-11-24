@@ -29,10 +29,11 @@ def createLevel(app):
     
     app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
     app.levelBackground = CMUImage(app.levelBackground)
-    app.levelRows = 10
-    app.levelCols = 25
+    app.levelRows = 18
+    app.levelCols = 20
     app.tileWidth =  app.width / app.levelCols
     app.tileHeight = app.height / app.levelRows
+    
     app.level =  []
 
     for row in range(app.levelRows):
@@ -40,28 +41,42 @@ def createLevel(app):
             app.level.append([-1] * app.levelCols)
         else:
             app.level.append([2] * app.levelCols)
+    app.level[app.levelRows-2][app.levelCols // 2] = 2 # this is random block for testing
     
     app.tileDict = dict()
     app.tileList = []
+    numPixels = 0
+    widthCounter = 0
+    heightCounter = 0
+    numPixels = int(app.tileWidth * app.tileHeight)
     for row in range(len(app.level)):
         for col in range(len(app.level[row])):
             if app.level[row][col] != -1:
-                app.tileDict[(row, col)] = Tile(row, col, app.level[row][col])
-                app.tileList.append(Tile(row, col, app.level[row][col]))
+                x = int(col * app.tileWidth)
+                y = int(row * app.tileHeight)
+                app.tileDict[(row, col)] = Tile(x, y, app.level[row][col])
+                app.tileList.append(Tile(x, y, app.level[row][col]))
+                for i in range(numPixels):
+                    app.tileDict[(x,y)] = 'Tile'
+                    if widthCounter <= int(app.tileWidth):
+                        widthCounter += 1
+                        x += 1
+                    else:
+                        widthCounter = 0
+                        x -= int(app.tileWidth)
+                        heightCounter += 1
+                        y += 1    
 
-     
+    print(len(app.tileDict), app.tileWidth )
+    
 def createFrame(app):
     app.frameRight = False
     app.frameLeft = False
     app.frameMoving = 0
     app.frameSpeed = 5
   
-
 def createPlayer(app):
-    app.meir = Player(10, 0, 5)    
-            
-def collisions(app):
-    pass
+    app.meir = Player(10, 0, 3)    
      
 def setFrame(app):
     
@@ -80,13 +95,12 @@ def drawLevel(app):
     for i in range(5):
         drawImage(app.levelBackground,i * app.width - app.frameMoving, 0)
     for i in range((app.levelRows)):
-        drawLine(0, app.tileHeight * i, 1280, app.tileHeight * i)
+        drawLine(0, app.tileHeight * i, app.width, app.tileHeight * i)
     for i in range((app.levelCols)):
-        drawLine(app.tileWidth * i, 0, app.tileWidth * i, 720)     
+        drawLine(app.tileWidth * i, 0, app.tileWidth * i, app.height)     
 
     for tile in app.tileList:
-        
-        drawImage(tile.img, tile.col * app.tileWidth, tile.row * app.tileHeight, width=app.tileWidth, height=app.tileHeight, fill = 'yellow')    
+        drawImage(tile.img, tile.x, tile.y, width=app.tileWidth, height=app.tileHeight, fill = 'yellow')    
 
 def redrawAll(app):
     
@@ -108,11 +122,10 @@ def onKeyHold(app, keys):
     app.meir.playerControls(keys, None)
     if 'right' in keys:
         app.frameRight = True
-        print('ji')
+        
     elif 'left' in keys:
         app.frameLeft = True  
-        print('plo') 
-
+         
 def onKeyRelease(app, key):
     app.meir.playerControls(dict(), key)
     if key == 'right':
@@ -125,10 +138,18 @@ def onStep(app):
     app.meir.updatePlayer() 
     app.meir.calculateVelocity()
     
-
 def openImage(fileName):
-        return Image.open(os.path.join(pathlib.Path(__file__).parent,fileName)) 
+        return Image.open(os.path.join(pathlib.Path(__file__).parent,fileName))
  
+def rectanglesOverlap(left1, top1, width1, height1,
+                            left2, top2, width2, height2):
+    bottom1 = top1 + height1
+    bottom2 = top2 + height2
+    right1 = left1 + width1
+    right2 = left2 + width2
+    return bottom1 >= top2 and bottom2 >= top1 and right1 >= left2 and right2 >= left1
+
+
 def clickDistance(mouseX, mouseY, x, y, width, height):
     if (x <= mouseX <= x+width) and (y <= mouseY <= y+height):
         return True 
