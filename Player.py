@@ -13,8 +13,8 @@ class Player():
         self.moveLeft = False
         self.jumping = False
         self.gravity = True
-        self.jumpHeight = -40
-        self.gravityStrength = 15
+        self.jumpHeight = -2
+        self.gravityStrength = 1
         self.prevPosX = x
         self.prevPosY = y
         self.posX = x
@@ -96,33 +96,55 @@ class Player():
         if Player.checkCollisions(self, 'top'):        
             if self.jumping == True:
                 self.posY += self.jumpHeight         
-
+    def getRange(self, row, col):
+        if row == 0 and col == 0:
+            self.rangeStartRows = 0
+            self.rangeEndRows = 2
+            self.rangeStartCols = 0
+            self.rangeEndCols = 2
+        elif row == 0 and col > 0:
+            self.rangeStartRows = 0
+            self.rangeEndRows = 2
+            self.rangeStartCols = -1
+            self.rangeEndCols = 2
+        elif row > 0 and col == 0:
+            self.rangeStartRows = -1
+            self.rangeEndRows = 2
+            self.rangeStartCols = 0
+            self.rangeEndCols = 2
+        elif row > 0 and col > 0:
+            self.rangeStartRows = -1
+            self.rangeEndRows = 2
+            self.rangeStartCols = -1
+            self.rangeEndCols = 2
     def checkCollisions(self, axis):
         if axis == 'right' or axis == 'left':
+            
             Player.futurePosition(self, 'x')
             col = int(self.futurePosX // self.width)
             row = int(self.posY // self.height)
-            if row > 0 and col > 0:
-                for i in range(-1, 2):
-                    for j in range(-1, 2):
-                        for object in app.tileDict[(row + i, col + j)]:
-                            if isinstance(object, Tile):
-                                    if Player.rectanglesOverlap(self.futurePosX, self.posY, self.width, self.height, 
-                                                                object.x, object.y, app.tileWidth, app.tileHeight):    
-                                        return False
+            Player.getRange(self,row,col)
+            for i in range(self.rangeStartRows, self.rangeEndRows):
+                for j in range(self.rangeStartCols, self.rangeEndCols):
+                    for object in app.tileDict[(row + i, col + j)]:
+                        if isinstance(object, Tile):
+                                if Player.rectanglesOverlap(self.futurePosX, self.posY, self.width, self.height, 
+                                                            object.x, object.y, app.tileWidth, app.tileHeight):    
+                                    return False
             return True    
         if axis == 'top' or axis == 'bottom':
             Player.futurePosition(self, 'y')
             col = int(self.posX // self.width)
             row = int(self.futurePosY // self.height)
-            if row > 0 and col > 0:
-                for i in range(-1, 2):
-                    for j in range(-1, 2):
-                        for object in app.tileDict[(row + i, col + j)]:
-                            if isinstance(object, Tile):
-                                    if Player.rectanglesOverlap(self.posX, self.futurePosY, self.width, self.height, 
-                                                                object.x, object.y, app.tileWidth, app.tileHeight): 
-                                        return False
+            Player.getRange(self,row,col)
+
+            for i in range(self.rangeStartRows, self.rangeEndRows):
+                for j in range(self.rangeStartCols, self.rangeEndCols):
+                    for object in app.tileDict[(row + i, col + j)]:
+                        if isinstance(object, Tile):
+                                if Player.rectanglesOverlap(self.posX, self.futurePosY, self.width, self.height, 
+                                                            object.x, object.y, app.tileWidth, app.tileHeight): 
+                                    return False
             return True    
     
     def rectanglesOverlap(left1, top1, width1, height1,

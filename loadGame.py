@@ -29,9 +29,9 @@ def createLevel(app):
     app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
     app.levelBackground = CMUImage(app.levelBackground)
     app.levelRows = 18
-    app.levelCols = 28
-    app.tileWidth =  app.width / app.levelCols
-    app.tileHeight = app.height / app.levelRows
+    app.levelCols = 50
+    app.tileWidth =  70
+    app.tileHeight = app.height // app.levelRows
     app.level =  []
 
     for row in range(app.levelRows):
@@ -63,7 +63,7 @@ def createPlayer(app):
 def createCollisionBoard(app):
     
     app.tileDict = dict()
-    cols = int(app.width // Player.width)
+    cols = int(app.tileWidth * app.levelCols // Player.width)
     rows = int(app.height // Player.height)
     for row in range(rows):
         for col in range(cols):
