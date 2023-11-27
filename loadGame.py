@@ -3,6 +3,7 @@ from PIL import Image
 import os, pathlib, time
 from Tile import *
 from Player import *
+import PowerUp
 
 
 def onAppStart(app):
@@ -28,28 +29,44 @@ def createLevel(app):
     
     app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
     app.levelBackground = CMUImage(app.levelBackground)
-    app.levelRows = 18
-    app.levelCols = 50
+    app.levelRows = 20
+    app.levelCols = 40
     app.tileWidth =  70
     app.tileHeight = app.height // app.levelRows
     app.level =  []
-
-    for row in range(app.levelRows):
-        if row < app.levelRows - 1:
-            app.level.append([-1] * app.levelCols)
-        else:
-            app.level.append([2] * app.levelCols)
-    app.level[app.levelRows-2][app.levelCols // 2] = 2 # this is random block for testing
-    app.rectList = []
     app.tileList = []
-    for row in range(len(app.level)):
-        for col in range(len(app.level[row])):
+    level = open("level1.txt", "r")
+    
+    for i, line in enumerate(level.readlines()):
+        print(level.read())
+        for j ,char in enumerate(line.split(' ')):
+            if char  != '-1' and char != '\n':
+                if char == 3:
+                    x = int(j * app.tileWidth)
+                    y = int(i * app.tileHeight)
+                    app.tileList.append(PowerUp(x, y))
+
+                x = int(j * app.tileWidth)
+                y = int(i * app.tileHeight)
+                app.tileList.append(Tile(x, y, int(char)))
+        print(char)
+
+    # for row in range(app.levelRows):
+    #     if row < app.levelRows - 1:
+    #         app.level.append([-1] * app.levelCols)
+    #     else:
+    #         app.level.append([2] * app.levelCols)
+    # app.level[app.levelRows-2][app.levelCols // 2] = 2 # this is random block for testing
+    # app.rectList = []
+    # app.tileList = []
+    # for row in range(len(app.level)):
+    #     for col in range(len(app.level[row])):
             
-            if app.level[row][col] != -1:
-                x = int(col * app.tileWidth)
-                y = int(row * app.tileHeight)
+    #         if app.level[row][col] != -1:
+    #             x = int(col * app.tileWidth)
+    #             y = int(row * app.tileHeight)
                 
-                app.tileList.append(Tile(x, y, app.level[row][col]))
+    #             app.tileList.append(Tile(x, y, app.level[row][col]))
                 
 def createFrame(app):
     app.frameRight = False
@@ -70,7 +87,7 @@ def createCollisionBoard(app):
             app.tileDict[(row, col)] = []
     for tile in app.tileList:
         row = int(tile.y // Player.height)
-        col = int(tile.x // Player.width)
+        col = int((tile.x) // Player.width)
         app.tileDict[(row,col)].append(tile)            
                   
 def setFrame(app):
@@ -131,6 +148,7 @@ def onStep(app):
     setFrame(app)
     app.meir.updatePlayer() 
     app.meir.calculateVelocity()
+    createCollisionBoard(app)
     
 def openImage(fileName):
         return Image.open(os.path.join(pathlib.Path(__file__).parent,fileName))

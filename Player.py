@@ -13,8 +13,8 @@ class Player():
         self.moveLeft = False
         self.jumping = False
         self.gravity = True
-        self.jumpHeight = -2
-        self.gravityStrength = 1
+        self.jumpHeight = -20
+        self.gravityStrength = 10
         self.prevPosX = x
         self.prevPosY = y
         self.posX = x
@@ -61,6 +61,8 @@ class Player():
             self.moving = True
             self.moveLeft = True
         if 'down' in keys: 
+            self.height  = int(self.height // 2)
+            self.posY = self.posY + self.height
             self.moving = True
             self.crouch = True
         if 'up' in keys:
@@ -74,6 +76,8 @@ class Player():
             self.moving = False
             self.moveLeft = False
         if 'down' == key: 
+            self.height = int(self.height*2)
+            self.posY = self.posY + self.height
             self.moving = False
             self.crouch = False
         if 'up' == key:
