@@ -81,6 +81,8 @@ class Player():
             self.jump = False  
     
     def updatePlayer(self):
+        
+        
         self.dx = 0
         self.dy = 0
         if self.alive:
@@ -102,9 +104,10 @@ class Player():
             Player.checkCollisions(self, 'left')
             Player.checkCollisions(self, 'top')
             Player.checkCollisions(self, 'bottom')
-            print('up hi dy',self.dy)
+            print('up hi dy',self.dy, self.dy + self.posY)
             self.posX += self.dx
             self.posY += self.dy
+            Player.checkCollisions(self, 'bottom')
             
     def getRange(self, row, col):
         if row == 0 and col == 0:
@@ -142,15 +145,15 @@ class Player():
                                 if Player.rectanglesOverlap(self.posX + self.dx, self.posY, self.width, self.height, 
                                                             object.x, object.y, object.width, object.height):
                                     
-                                    self.dx = 0
+                                    # self.dx = 0
                                     # not done here
-                                    # if self.dx < 0:
-                                    #     print('collided, moving left')
-                                    #     self.dx = object.left() - self.posX
-                                    # elif self.dx > 0:
-                                    #     print('collided, moving right')
-                                    #     self.dx = object.right() - self.posX  + self.width  
-                                    # self.vx = 0
+                                    if self.vX < 0:
+                                        print('collided, moving left')
+                                        self.dx = object.left() - self.posX
+                                    elif self.vX > 0:
+                                        print('collided, moving right')
+                                        self.dx = object.right() - self.posX  + self.width  
+                                    self.vx = 0
                                        
                                     
                 
@@ -172,12 +175,12 @@ class Player():
                                         self.dy = object.bottom() - self.posY
                                         
                                     elif self.vY >= 0:
-                                        print('bob', object.top() - (self.posY + self.height), 'y tile', object.y, 'self y', self.posY + self.height )
+                                        print(self.height)
+                                        print('bob', object.top(), (self.posY), 'y tile', object.y, 'self y', self.posY + self.height )
                                         self.vY = 0
                                         self.dy = object.top() - (self.posY + self.height)
                                         self.onGround = True
-                                else:
-
+                                else:        
                                     print('didnt collide', 'vy', self.vY, 'dy', self.dy )        
                                         
                                     

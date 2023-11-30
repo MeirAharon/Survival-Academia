@@ -3,29 +3,80 @@ from PIL import Image
 import os, pathlib, time
 from Tile import *
 from Player import *
+from button import *
 
 app.height = 720
 app.width = 1280
 def onAppStart(app):
-    
     createMenu(app)
     createLevel(app)
     createFrame(app)
     createPlayer(app)
     createCollisionBoard(app)
+    createLevelEditor(app)
     app.playState = True
     app.spriteCounter = 0
     app.stepsPerSecond = 60
     app.moving = False
-
+#
+# MENU SCREEN
+#
 def createMenu(app):
 
     app.menuBackground = openImage("assets/menuBackground.png")
-    app.startButton = openImage("assets/startButton.png")
-    app.startButtonWidth, app.startButtonHeight = app.startButton.width, app.startButton.height
     app.menuBackground = CMUImage(app.menuBackground)
-    app.startButton = CMUImage(app.startButton)
 
+    app.menuButtons = []
+    app.buttonNames = ["inGame", "options", "levelEditor", "character"]
+    for i in range(4):
+        buttonImage = openImage(f"assets\\menuButtons\\button{i}.png")
+        imageWidth, imageHeight = buttonImage.width, buttonImage.height
+        buttonImage = CMUImage(buttonImage)
+
+        if i == 0:
+            x = app.width // 2 - imageWidth // 2
+            y = app.height // 3 + imageHeight // 2
+        else:
+            x = i * (app.width // 4) - imageWidth // 2
+            y = app.height - app.height // 3
+
+        app.menuButtons.append(Button(x, y, imageWidth, imageHeight, app.buttonNames[i], i, buttonImage))
+
+
+def drawMenu(app):
+    
+    drawImage(app.menuBackground, 0,0)
+    for button in app.menuButtons:
+        drawImage(button.img, button.x, button.y)
+
+def start_redrawAll(app):
+        drawMenu(app)
+        
+def start_onMousePress(app, mouseX, mouseY):
+    for button in app.menuButtons:
+        if button.buttonClicked(mouseX, mouseY):
+            setActiveScreen(button.imgName)
+    
+def start_onKeyHold(app, keys):
+    pass  
+         
+def start_onKeyRelease(app, key):
+    pass  
+
+def start_onStep(app):
+    pass 
+    # app.meir.calculateVelocity()
+#
+#LEVEL EDITOR
+#
+def createLevelEditor(app):
+    app.background = rgb(122, 223, 253)
+def levelEditor_redrawAll(app):
+    drawRect(0,0,30,30, fill = 'blue')
+
+#
+# IN_GAME SCREEN
+#
 def createLevel(app):
     
     app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
@@ -76,20 +127,13 @@ def createCollisionBoard(app):
         row = int(tile.y // Tile.height)
         col = int(tile.x // Tile.width)
         app.tileDict[(row,col)].append(tile)
-         
-                  
-                  
+          
 def setFrame(app):
     
     if app.frameRight:
         app.frameMoving += app.frameSpeed
     if app.frameLeft and app.frameMoving > 0:
-        app.frameMoving -= app.frameSpeed
-
-def drawMenu(app):
-
-    drawImage(app.menuBackground, 0,0)
-    drawImage(app.startButton, app.width//2 - app.startButtonWidth//2, app.height//2)
+        app.frameMoving -= app.frameSpeed 
 
 def drawLevel(app):
        
@@ -103,7 +147,7 @@ def drawLevel(app):
     for tile in app.tileList:
         drawImage(tile.img, tile.x, tile.y, width=app.tileWidth, height=app.tileHeight, fill = 'yellow')    
 
-def redrawAll(app):
+def inGame_redrawAll(app):
     
     if not app.playState:
         drawMenu(app)
@@ -113,12 +157,12 @@ def redrawAll(app):
         rectWidth, rectHeight = app.meir.playerRectSize[0]  
         drawLabel(f'v({app.meir.velocity} pixels per second)', app.meir.posX + rectWidth, app.meir.posY + rectHeight + 20, size = 30)
         
-def onMousePress(app, mouseX, mouseY):
+def inGame_onMousePress(app, mouseX, mouseY):
     if not app.playState and clickDistance(mouseX, mouseY, app.width//2 - app.startButtonWidth//2,
                                        app.height//2, app.startButtonWidth, app.startButtonHeight):
         app.playState = True
 
-def onKeyHold(app, keys):
+def inGame_onKeyHold(app, keys):
     app.meir.playerControls(keys, None)
     if 'right' in keys:
         app.frameRight = True
@@ -126,17 +170,16 @@ def onKeyHold(app, keys):
     elif 'left' in keys:
         app.frameLeft = True  
          
-def onKeyRelease(app, key):
+def inGame_onKeyRelease(app, key):
     app.meir.playerControls(dict(), key)
     if key == 'right':
         app.frameRight = False
     elif key == 'left':
         app.frameLeft = False  
 
-def onStep(app):
+def inGame_onStep(app):
     setFrame(app)
-    app.meir.updatePlayer() 
-    # app.meir.calculateVelocity()
+    app.meir.updatePlayer()           
     
     
 def openImage(fileName):
@@ -147,6 +190,6 @@ def clickDistance(mouseX, mouseY, x, y, width, height):
         return True 
     
 def main():
-    runApp(width=1280,height=720)    
+    runAppWithScreens("start", width=1280,height=720)    
     
 main()    
