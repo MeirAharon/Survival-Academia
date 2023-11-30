@@ -1,5 +1,5 @@
 class Button:
-    def __init__(self, x, y, width, height, imgName, imgNum, img):
+    def __init__(self, x, y, width, height,imgNum, img, imgName='none'):
         self.x = x
         self.y = y
         self.width = width 

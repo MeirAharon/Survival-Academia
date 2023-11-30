@@ -40,7 +40,7 @@ def createMenu(app):
             x = i * (app.width // 4) - imageWidth // 2
             y = app.height - app.height // 3
 
-        app.menuButtons.append(Button(x, y, imageWidth, imageHeight, app.buttonNames[i], i, buttonImage))
+        app.menuButtons.append(Button(x, y, imageWidth, imageHeight, i, buttonImage, app.buttonNames[i]))
 
 
 def drawMenu(app):
@@ -70,9 +70,95 @@ def start_onStep(app):
 #LEVEL EDITOR
 #
 def createLevelEditor(app):
+    app.levelEditorScroll = 0
+    app.levelEditorButtonNames = ["deselect", "back", "save"]
     app.background = rgb(122, 223, 253)
+    app.editorRows = 12
+    app.editorCols = 60
+    app.editorTileButtons = []
+    app.tileNumber = -1
+    app.tileSelected = False
+    app.tilesPlaced = []
+    app.tileDictionary = dict()
+    # create empty level list
+    for row in range(app.editorRows):
+        app.tilesPlaced.append([-1] * app.editorCols)
+
+    for i in range(15):
+        tileImage = openImage(f"assets\\levelEditorButtons\\Tile_{i}.png")
+        tileWidth, tileHeight = 50, 50
+        tileImage = CMUImage(tileImage)
+        app.editorTileButtons.append(Button(900 + (i*60 )%180, 50 + (i//3)*100, tileWidth, tileHeight, i, tileImage))
+
+    for i in range(3):
+        buttonImage = openImage(f"assets\\levelEditorButtons\\button{i}.png" )   
+        buttonWidth, buttonHeight = 100, 60
+        buttonImage = CMUImage(buttonImage)
+        imgName = app.levelEditorButtonNames[i]
+        if i == 2:
+            app.editorTileButtons.append(Button(50, 620, buttonWidth, buttonHeight, i, buttonImage, imgName))
+        else:
+            app.editorTileButtons.append(Button(900, 520 + i*(buttonHeight + 20), buttonWidth, buttonHeight, i, buttonImage, imgName))
+
 def levelEditor_redrawAll(app):
-    drawRect(0,0,30,30, fill = 'blue')
+    
+    for row in range(app.editorRows):
+        drawLine(0, row * 50, app.width, row * 50)
+    for col in range(app.editorCols):
+        drawLine(col * 50 + app.levelEditorScroll, 0, col * 50 + app.levelEditorScroll, app.height)
+    for tile in app.tileDictionary:
+        tileImage = openImage(f"assets\\levelEditorButtons\\Tile_{app.tileDictionary[tile]}.png")
+        tileWidth, tileHeight = 50, 50
+        tileImage = CMUImage(tileImage)
+        row, col = tile
+        x = int(col *50)
+        y = int(row*50)
+        if x + app.levelEditorScroll  < 880  and y < 600:
+            drawImage(tileImage, x + app.levelEditorScroll, y, width = 50, height = 50 )    
+    drawRect(880,0,880,app.height, fill = rgb(122, 223, 253))
+    drawRect(0, 600, 880, app.height, fill = rgb(122, 223, 253) )
+    for tile in app.editorTileButtons:
+        drawImage(tile.img, tile.x, tile.y, width = tile.width, height=tile.height)    
+
+def levelEditor_onKeyHold(app, keys):
+    if 'right' in keys:
+        app.levelEditorScroll -= 5
+    if 'left' in keys:
+        app.levelEditorScroll += 5 
+    if app.levelEditorScroll > 0:
+        app.levelEditorScroll = 0   
+
+def levelEditor_onMousePress(app, mouseX, mouseY):
+
+    print('in mouse press')
+    if app.tileSelected and mouseX < 880 and mouseY < 600:
+        #list we are building for saving a level
+        app.tilesPlaced[mouseY // 50][ (-1 *app.levelEditorScroll + mouseX) // 50 ] = app.tileNumber
+        #dictionary for drawing in real time
+        app.tileDictionary[(mouseY // 50, (-1 * app.levelEditorScroll + mouseX) // 50)] = app.tileNumber
+        
+    for tile in app.editorTileButtons:
+        if tile.buttonClicked(mouseX, mouseY):
+            if tile.imgName == "back":
+                setActiveScreen("start")
+            elif tile.imgName == "save":
+                saveLevel(app)   
+            app.tileSelected = True
+            app.tileNumber = tile.imgNum
+            
+def saveLevel(app):
+    level = open("level1.txt", "w")
+    level.write('[')
+    for row in range(len(app.tilesPlaced)):
+            level.write(str(app.tilesPlaced[row]))
+    level.write(']')
+    level.close()
+    level = open("level1.txt", "r")
+    print(level.read())
+
+
+
+
 
 #
 # IN_GAME SCREEN
@@ -87,13 +173,11 @@ def createLevel(app):
     app.tileHeight = app.height // app.levelRows
     # print(app.tileHeight)
     app.level =  []
+    app.levelFile = open("level1.txt", "r")
 
-    for row in range(app.levelRows):
-        if row < app.levelRows - 1:
-            app.level.append([-1] * app.levelCols)
-        else:
-            app.level.append([2] * app.levelCols)
-    app.level[10][5] = 2 # this is random block for testing
+    # for row in app.levelFile.readlines():
+    #     app.level.append(row)
+    # app.level[10][5] = 2 # this is random block for testing
     app.rectList = []
     app.tileList = []
     for row in range(len(app.level)):
