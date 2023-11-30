@@ -4,8 +4,10 @@ import os, pathlib, time
 from Tile import *
 from Player import *
 
-
+app.height = 720
+app.width = 1280
 def onAppStart(app):
+    
     createMenu(app)
     createLevel(app)
     createFrame(app)
@@ -28,10 +30,11 @@ def createLevel(app):
     
     app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
     app.levelBackground = CMUImage(app.levelBackground)
-    app.levelRows = 18
-    app.levelCols = 50
-    app.tileWidth =  70
+    app.levelRows = 12
+    app.levelCols = 60
+    app.tileWidth =  60
     app.tileHeight = app.height // app.levelRows
+    # print(app.tileHeight)
     app.level =  []
 
     for row in range(app.levelRows):
@@ -39,7 +42,7 @@ def createLevel(app):
             app.level.append([-1] * app.levelCols)
         else:
             app.level.append([2] * app.levelCols)
-    app.level[app.levelRows-2][app.levelCols // 2] = 2 # this is random block for testing
+    app.level[10][5] = 2 # this is random block for testing
     app.rectList = []
     app.tileList = []
     for row in range(len(app.level)):
@@ -51,6 +54,7 @@ def createLevel(app):
                 
                 app.tileList.append(Tile(x, y, app.level[row][col]))
                 
+                
 def createFrame(app):
     app.frameRight = False
     app.frameLeft = False
@@ -58,20 +62,22 @@ def createFrame(app):
     app.frameSpeed = 5
   
 def createPlayer(app):
-    app.meir = Player(10, 0, 7)    
+    app.meir = Player(100, 500, 10)    
 
 def createCollisionBoard(app):
     
     app.tileDict = dict()
-    cols = int(app.tileWidth * app.levelCols // Player.width)
-    rows = int(app.height // Player.height)
-    for row in range(rows):
-        for col in range(cols):
+    
+    for row in range(-5, 200):
+        for col in range(-5, 200):
             app.tileDict[(row, col)] = []
+             
     for tile in app.tileList:
-        row = int(tile.y // Player.height)
-        col = int(tile.x // Player.width)
-        app.tileDict[(row,col)].append(tile)            
+        row = int(tile.y // Tile.height)
+        col = int(tile.x // Tile.width)
+        app.tileDict[(row,col)].append(tile)
+         
+                  
                   
 def setFrame(app):
     
@@ -130,7 +136,8 @@ def onKeyRelease(app, key):
 def onStep(app):
     setFrame(app)
     app.meir.updatePlayer() 
-    app.meir.calculateVelocity()
+    # app.meir.calculateVelocity()
+    
     
 def openImage(fileName):
         return Image.open(os.path.join(pathlib.Path(__file__).parent,fileName))

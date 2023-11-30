@@ -2,8 +2,10 @@ from cmu_graphics import *
 from PIL import Image
 import os, pathlib, time
 from Tile import *
-
+app.height = 720
+app.width = 1280
 class Player():
+    
     width = 40
     height = 70
     def __init__(self, x, y, movementSpeed):
@@ -11,15 +13,16 @@ class Player():
         self.moving = False
         self.moveRight = False
         self.moveLeft = False
-        self.jumping = False
-        self.gravity = True
-        self.jumpHeight = -2
-        self.gravityStrength = 1
+        self.jump = False
+        self.gravityBoolean = True
+        self.jumpHeight = -5
+        self.gravityStrength = .5
         self.prevPosX = x
         self.prevPosY = y
         self.posX = x
-        self.distance =0 #test variable
         self.posY = y
+        self.dx = 0
+        self.dy = 0
         self.futurePosX = 0
         self.futurePosY = 0
         self.movementBufferX = 3
@@ -28,14 +31,19 @@ class Player():
         self.gX = 0
         self.gY = 1
         self.velocity = 0
+        self.terminalVelocityY = 5
+        self.terminalVelocityX = 5
         self.width = 40
         self.height = 70
         self.spriteDirection = 'right'
+        self.flip = 0
         self.spriteCounter = 0
         self.sprites = []
         self.playerRectSize = []
         self.spritestrip = openImage("assets/Swordsman_spritelist2.png")
         self.yCollide = 0
+        self.alive = True
+        self.onGround = False
 
         for i in range(0, 8):
             sprite = CMUImage(self.spritestrip.crop((45*i, 0, 45+45*i, 75)))
@@ -45,57 +53,59 @@ class Player():
 
         # self.width, self.height = self.playerRectSize[0]
 
-    def calculateVelocity(self):
-        #this is called from onstep() so time is accounted for 
-        self.vX = (self.posX - self.prevPosX)
-        self.vY = (self.posY - self.prevPosY)
-        self.velocity = ((self.prevPosX - self.posX)**2 + (self.prevPosY - self.posY)**2)**0.5
-        self.prevPosX = self.posX
-        self.prevPosY = self.posY  
+    # def calculateVelocity(self):
+    #     #this is called from onstep() so time is accounted for 
+    #     self.vX = (self.posX - self.prevPosX)
+    #     self.vY = (self.posY - self.prevPosY)
+    #     self.velocity = ((self.prevPosX - self.posX)**2 + (self.prevPosY - self.posY)**2)**0.5
+    #     self.prevPosX = self.posX
+    #     self.prevPosY = self.posY  
 
     def playerControls(self, keys, key):
         if 'right' in keys:
-            self.moving = True
             self.moveRight = True
         if 'left' in keys:    
-            self.moving = True
             self.moveLeft = True
         if 'down' in keys: 
-            self.moving = True
             self.crouch = True
-        if 'up' in keys:
-            self.moving = True
-            self.jumping = True
+        if 'up' in keys and self.onGround:
+            self.jump = True
         # checking if player has released the key
         if 'right' == key:
-            self.moving = False
             self.moveRight = False
         if 'left' == key:    
-            self.moving = False
             self.moveLeft = False
-        if 'down' == key: 
-            self.moving = False
+        if 'down' == key:
             self.crouch = False
         if 'up' == key:
-            self.moving = False
-            self.jumping = False  
+            self.jump = False  
     
     def updatePlayer(self):
-    
-        if Player.checkCollisions(self, 'right'):        
-            if self.moveRight == True:
-                self.spriteCounter = (1 + self.spriteCounter) % len(self.sprites)
-                self.posX += self.movementSpeed
-        if Player.checkCollisions(self, 'left'):        
-            if self.moveLeft == True:
-                self.spriteCounter = (1 + self.spriteCounter) % len(self.sprites)
-                self.posX -= self.movementSpeed   
-        if Player.checkCollisions(self, 'bottom'):
-            if self.gravity == True:
-                self.posY += self.gravityStrength     
-        if Player.checkCollisions(self, 'top'):        
-            if self.jumping == True:
-                self.posY += self.jumpHeight         
+        self.dx = 0
+        self.dy = 0
+        if self.alive:
+            if self.moveRight:
+                self.dx = self.movementSpeed
+            if self.moveLeft:
+                self.dx = -self.movementSpeed
+            if self.jump:
+                self.vY = self.jumpHeight
+                self.jump = False
+
+            self.vY += self.gravityStrength 
+            if self.vY > self.terminalVelocityY:
+                self.vY = self.terminalVelocityY 
+                           
+            self.dy += self.vY
+
+            Player.checkCollisions(self, 'right')
+            Player.checkCollisions(self, 'left')
+            Player.checkCollisions(self, 'top')
+            Player.checkCollisions(self, 'bottom')
+            print('up hi dy',self.dy)
+            self.posX += self.dx
+            self.posY += self.dy
+            
     def getRange(self, row, col):
         if row == 0 and col == 0:
             self.rangeStartRows = 0
@@ -118,34 +128,60 @@ class Player():
             self.rangeStartCols = -1
             self.rangeEndCols = 2
     def checkCollisions(self, axis):
+
         if axis == 'right' or axis == 'left':
             
-            Player.futurePosition(self, 'x')
-            col = int(self.futurePosX // self.width)
-            row = int(self.posY // self.height)
+            col = int((self.posX + self.dx) // app.tileWidth)
+            row = int(self.posY // app.tileHeight)
             Player.getRange(self,row,col)
+            
             for i in range(self.rangeStartRows, self.rangeEndRows):
                 for j in range(self.rangeStartCols, self.rangeEndCols):
                     for object in app.tileDict[(row + i, col + j)]:
                         if isinstance(object, Tile):
-                                if Player.rectanglesOverlap(self.futurePosX, self.posY, self.width, self.height, 
-                                                            object.x, object.y, app.tileWidth, app.tileHeight):    
-                                    return False
-            return True    
+                                if Player.rectanglesOverlap(self.posX + self.dx, self.posY, self.width, self.height, 
+                                                            object.x, object.y, object.width, object.height):
+                                    
+                                    self.dx = 0
+                                    # not done here
+                                    # if self.dx < 0:
+                                    #     print('collided, moving left')
+                                    #     self.dx = object.left() - self.posX
+                                    # elif self.dx > 0:
+                                    #     print('collided, moving right')
+                                    #     self.dx = object.right() - self.posX  + self.width  
+                                    # self.vx = 0
+                                       
+                                    
+                
         if axis == 'top' or axis == 'bottom':
-            Player.futurePosition(self, 'y')
-            col = int(self.posX // self.width)
-            row = int(self.futurePosY // self.height)
+            col = int(self.posX // app.tileWidth)
+            row = int((self.posY + self.dy) // app.tileHeight)
+            
             Player.getRange(self,row,col)
 
             for i in range(self.rangeStartRows, self.rangeEndRows):
                 for j in range(self.rangeStartCols, self.rangeEndCols):
                     for object in app.tileDict[(row + i, col + j)]:
                         if isinstance(object, Tile):
-                                if Player.rectanglesOverlap(self.posX, self.futurePosY, self.width, self.height, 
-                                                            object.x, object.y, app.tileWidth, app.tileHeight): 
-                                    return False
-            return True    
+                                if Player.rectanglesOverlap(self.posX, self.posY + self.dy, self.width, self.height, 
+                                                            object.x, object.y, object.width, object.height):
+                                    print('vy',self.vY)
+                                    if self.vY < 0:
+                                        self.vY = 0
+                                        self.dy = object.bottom() - self.posY
+                                        
+                                    elif self.vY >= 0:
+                                        print('bob', object.top() - (self.posY + self.height), 'y tile', object.y, 'self y', self.posY + self.height )
+                                        self.vY = 0
+                                        self.dy = object.top() - (self.posY + self.height)
+                                        self.onGround = True
+                                else:
+
+                                    print('didnt collide', 'vy', self.vY, 'dy', self.dy )        
+                                        
+                                    
+                
     
     def rectanglesOverlap(left1, top1, width1, height1,
                             left2, top2, width2, height2):
@@ -156,27 +192,17 @@ class Player():
         return bottom1 >= top2 and bottom2 >= top1 and right1 >= left2 and right2 >= left1
     def distanceBetweenRects(x1, y1, x2, y2):
         distance = max(((x2 - x1)/2 , (y2 - y1)/2))
-        print(distance)
+        
         return distance
-        
-    def futurePosition(self, axis):
-
-        if axis == 'x':        
-            if self.moveRight == True:
-                self.futurePosX = self.posX + self.movementSpeed
-            elif self.moveLeft == True:
-                self.futurePosX = self.posX - self.movementSpeed 
-        
-        elif axis == 'y':
-            if self.gravity == True:
-                self.futurePosY = self.posY + self.gravityStrength
-            if self.jumping == True:
-                self.futurePosY = self.posY + self.jumpHeight + self.gravityStrength    
+            
 
     def drawPlayer(self):
-        
-        drawImage(self.sprites[self.spriteCounter], self.posX, self.posY)
-        drawRect(self.posX, self.posY, self.width, self.height, fill = None, border = 'black' ) 
+        if self.flip:
+            drawImage(self.sprites[self.spriteCounter], self.posX, self.posY)
+            drawRect(self.posX, self.posY, self.width, self.height, fill = None, border = 'black' ) 
+        else:
+            drawImage(self.sprites[self.spriteCounter], self.posX, self.posY)
+            drawRect(self.posX, self.posY, self.width, self.height, fill = None, border = 'black' )
 
 def openImage(fileName):
         return Image.open(os.path.join(pathlib.Path(__file__).parent,fileName))                
