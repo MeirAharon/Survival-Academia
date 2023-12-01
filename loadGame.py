@@ -247,7 +247,7 @@ def drawLevel(app):
         drawLine(app.tileWidth * i, 0, app.tileWidth * i, app.height)     
 
     for tile in app.tileList:
-        drawImage(tile.img, tile.x + app.frameScroll, tile.y, width=app.tileWidth, height=app.tileHeight, fill = 'yellow')    
+        drawImage(tile.img, tile.x, tile.y, width=app.tileWidth, height=app.tileHeight, fill = 'yellow')    
 
 def inGame_redrawAll(app):
     

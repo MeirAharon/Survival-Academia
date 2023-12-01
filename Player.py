@@ -15,8 +15,8 @@ class Player():
         self.moveLeft = False
         self.jump = False
         self.gravityBoolean = True
-        self.jumpHeight = -5
-        self.gravityStrength = .5
+        self.jumpHeight = -15
+        self.gravityStrength = 2
         self.prevPosX = x
         self.prevPosY = y
         self.posX = x
@@ -179,6 +179,7 @@ class Player():
                                         print('bob', object.top(), (self.posY), 'y tile', object.y, 'self y', self.posY + self.height )
                                         self.vY = 0
                                         self.dy = object.top() - (self.posY + self.height)
+                                        self.dy = 0
                                         self.onGround = True
                                 else:        
                                     print('didnt collide', 'vy', self.vY, 'dy', self.dy )        
