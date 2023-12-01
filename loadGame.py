@@ -14,6 +14,7 @@ def onAppStart(app):
     createPlayer(app)
     createCollisionBoard(app)
     createLevelEditor(app)
+    loadLevel(app)
     app.playState = True
     app.spriteCounter = 0
     app.stepsPerSecond = 60
@@ -71,7 +72,7 @@ def start_onStep(app):
 #
 def createLevelEditor(app):
     app.levelEditorScroll = 0
-    app.levelEditorButtonNames = ["deselect", "back", "save"]
+    app.levelEditorButtonNames = ["deselect", "back", "save", "delete"]
     app.background = rgb(122, 223, 253)
     app.editorRows = 12
     app.editorCols = 60
@@ -80,9 +81,11 @@ def createLevelEditor(app):
     app.tileSelected = False
     app.tilesPlaced = []
     app.tileDictionary = dict()
+    app.deleteTile = False
     # create empty level list
     for row in range(app.editorRows):
-        app.tilesPlaced.append([-1] * app.editorCols)
+        app.tilesPlaced.append([20] * app.editorCols)
+        
 
     for i in range(15):
         tileImage = openImage(f"assets\\levelEditorButtons\\Tile_{i}.png")
@@ -90,13 +93,15 @@ def createLevelEditor(app):
         tileImage = CMUImage(tileImage)
         app.editorTileButtons.append(Button(900 + (i*60 )%180, 50 + (i//3)*100, tileWidth, tileHeight, i, tileImage))
 
-    for i in range(3):
+    for i in range(4):
         buttonImage = openImage(f"assets\\levelEditorButtons\\button{i}.png" )   
         buttonWidth, buttonHeight = 100, 60
         buttonImage = CMUImage(buttonImage)
         imgName = app.levelEditorButtonNames[i]
         if i == 2:
             app.editorTileButtons.append(Button(50, 620, buttonWidth, buttonHeight, i, buttonImage, imgName))
+        elif i == 3:
+            app.editorTileButtons.append(Button(920 + buttonWidth, 520, buttonWidth, buttonHeight, i, buttonImage, imgName))        
         else:
             app.editorTileButtons.append(Button(900, 520 + i*(buttonHeight + 20), buttonWidth, buttonHeight, i, buttonImage, imgName))
 
@@ -114,7 +119,7 @@ def levelEditor_redrawAll(app):
         x = int(col *50)
         y = int(row*50)
         if x + app.levelEditorScroll  < 880  and y < 600:
-            drawImage(tileImage, x + app.levelEditorScroll, y, width = 50, height = 50 )    
+            drawImage(tileImage, x + app.levelEditorScroll, y, width = tileWidth, height = tileHeight )    
     drawRect(880,0,880,app.height, fill = rgb(122, 223, 253))
     drawRect(0, 600, 880, app.height, fill = rgb(122, 223, 253) )
     for tile in app.editorTileButtons:
@@ -131,69 +136,82 @@ def levelEditor_onKeyHold(app, keys):
 def levelEditor_onMousePress(app, mouseX, mouseY):
 
     print('in mouse press')
-    if app.tileSelected and mouseX < 880 and mouseY < 600:
+    if app.tileSelected and mouseX < 880 and mouseY < 600 and not app.deleteTile:
         #list we are building for saving a level
         app.tilesPlaced[mouseY // 50][ (-1 *app.levelEditorScroll + mouseX) // 50 ] = app.tileNumber
         #dictionary for drawing in real time
         app.tileDictionary[(mouseY // 50, (-1 * app.levelEditorScroll + mouseX) // 50)] = app.tileNumber
+    if app.deleteTile:
+        if app.tileDictionary.get((mouseY // 50, (-1 * app.levelEditorScroll + mouseX) // 50)) != None:
+            app.tilesPlaced[mouseY // 50][ (-1 *app.levelEditorScroll + mouseX) // 50 ] = 20 # THIS IS WHERE IM SETTING MAP VALUES GETTING DELETED
+            popped = app.tileDictionary.pop((mouseY // 50, (-1 * app.levelEditorScroll + mouseX) // 50))
+            print('indeletetile', popped)
+        
         
     for tile in app.editorTileButtons:
         if tile.buttonClicked(mouseX, mouseY):
             if tile.imgName == "back":
                 setActiveScreen("start")
             elif tile.imgName == "save":
-                saveLevel(app)   
+                saveLevel(app) 
+            elif tile.imgName == "delete":
+                app.deleteTile = not app.deleteTile
+                
             app.tileSelected = True
             app.tileNumber = tile.imgNum
             
 def saveLevel(app):
     level = open("level1.txt", "w")
-    level.write('[')
-    for row in range(len(app.tilesPlaced)):
-            level.write(str(app.tilesPlaced[row]))
-    level.write(']')
+    for row in app.tilesPlaced:
+        print(row)
+        level.write(' '.join([str(item) for item in row])+'\n')
     level.close()
     level = open("level1.txt", "r")
-    print(level.read())
+    loadLevel(app)
 
-
-
-
+def loadLevel(app):
+    level = open("level1.txt", "r")
+    for line in (level):           
+            app.level.append([int(char) for char in line.split()])            
+    level.close()
+    level = open("level1.txt", "r")
 
 #
 # IN_GAME SCREEN
 #
 def createLevel(app):
-    
+    app.charList = []
     app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
     app.levelBackground = CMUImage(app.levelBackground)
     app.levelRows = 12
     app.levelCols = 60
     app.tileWidth =  60
     app.tileHeight = app.height // app.levelRows
-    # print(app.tileHeight)
+    
     app.level =  []
     app.levelFile = open("level1.txt", "r")
-
-    # for row in app.levelFile.readlines():
-    #     app.level.append(row)
-    # app.level[10][5] = 2 # this is random block for testing
     app.rectList = []
     app.tileList = []
+
+    level = open("level1.txt", "r")
+    for line in (level):           
+        app.level.append([int(char) for char in line.split()])
+        print(app.level)            
+    level.close()
+    level = open("level1.txt", "r")
+    print(app.level)
+    
     for row in range(len(app.level)):
         for col in range(len(app.level[row])):
-            
-            if app.level[row][col] != -1:
+            if app.level[row][col] != 20:
                 x = int(col * app.tileWidth)
                 y = int(row * app.tileHeight)
-                
                 app.tileList.append(Tile(x, y, app.level[row][col]))
-                
-                
+            
 def createFrame(app):
     app.frameRight = False
     app.frameLeft = False
-    app.frameMoving = 0
+    app.frameScroll = 0
     app.frameSpeed = 5
   
 def createPlayer(app):
@@ -203,33 +221,33 @@ def createCollisionBoard(app):
     
     app.tileDict = dict()
     
-    for row in range(-5, 200):
-        for col in range(-5, 200):
+    for row in range(-80, 200):
+        for col in range(-80, 200):
             app.tileDict[(row, col)] = []
              
     for tile in app.tileList:
         row = int(tile.y // Tile.height)
-        col = int(tile.x // Tile.width)
+        col = int(tile.x  // Tile.width)
         app.tileDict[(row,col)].append(tile)
           
 def setFrame(app):
     
     if app.frameRight:
-        app.frameMoving += app.frameSpeed
-    if app.frameLeft and app.frameMoving > 0:
-        app.frameMoving -= app.frameSpeed 
+        app.frameScroll -= app.frameSpeed
+    if app.frameLeft and app.frameScroll > 0:
+        app.frameScroll += app.frameSpeed 
 
 def drawLevel(app):
        
     for i in range(5):
-        drawImage(app.levelBackground,i * app.width - app.frameMoving, 0)
+        drawImage(app.levelBackground,i * app.width + app.frameScroll, 0)
     for i in range((app.levelRows)):
         drawLine(0, app.tileHeight * i, app.width, app.tileHeight * i)
     for i in range((app.levelCols)):
         drawLine(app.tileWidth * i, 0, app.tileWidth * i, app.height)     
 
     for tile in app.tileList:
-        drawImage(tile.img, tile.x, tile.y, width=app.tileWidth, height=app.tileHeight, fill = 'yellow')    
+        drawImage(tile.img, tile.x + app.frameScroll, tile.y, width=app.tileWidth, height=app.tileHeight, fill = 'yellow')    
 
 def inGame_redrawAll(app):
     
@@ -263,7 +281,8 @@ def inGame_onKeyRelease(app, key):
 
 def inGame_onStep(app):
     setFrame(app)
-    app.meir.updatePlayer()           
+    app.meir.updatePlayer() 
+              
     
     
 def openImage(fileName):
@@ -272,7 +291,8 @@ def openImage(fileName):
 def clickDistance(mouseX, mouseY, x, y, width, height):
     if (x <= mouseX <= x+width) and (y <= mouseY <= y+height):
         return True 
-    
+      
+
 def main():
     runAppWithScreens("start", width=1280,height=720)    
     
