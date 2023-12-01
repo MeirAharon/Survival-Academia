@@ -199,7 +199,7 @@ def levelEditor_loadLevel(app):
 def inGame_createLevel(app):
 
     app.gameStartTime = time.time()
-    app.gameTimeLimit = 450
+    app.gameTimeLimit = 45
     app.stepsPerSecond = 60
     app.charList = []
     app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
@@ -269,8 +269,9 @@ def inGame_drawLevel(app):
     #     drawLine(app.tileWidth * i, 0, app.tileWidth * i, app.height)     
 
     for tile in app.tileList: 
-
-        drawImage(tile.img, tile.x + app.frameScroll, tile.y, width=app.tileWidth, height=app.tileHeight)    
+        
+        drawImage(tile.img, tile.x + app.frameScroll, tile.y, width=app.tileWidth, height=app.tileHeight) 
+           
 
 def inGame_redrawAll(app):
 
@@ -307,7 +308,7 @@ def inGame_onStep(app):
     app.meir.updatePlayer() 
     app.meir.calculateVelocity()
     print(app.meir.posX)
-    if app.meir.posX > 10000:
+    if app.meir.posX > 2500:
         setActiveScreen("gameOver")
     if time.time() - app.gameStartTime > app.gameTimeLimit:
         app.meir.alive = False
