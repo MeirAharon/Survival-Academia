@@ -25,6 +25,8 @@ class Tile():
     
     def left(self):
         return self.x  
+    # def draw(self):
+    #      drawImage(self.img, self.x , self.y, width = self.width, height = self.height)
         
 
 def openImage(fileName):

@@ -15,7 +15,7 @@ class Player():
         self.moveLeft = False
         self.jump = False
         self.gravityBoolean = True
-        self.jumpHeight = -15
+        self.jumpHeight = -23
         self.gravityStrength = 2
         self.prevPosX = x
         self.prevPosY = y
@@ -53,13 +53,13 @@ class Player():
 
         # self.width, self.height = self.playerRectSize[0]
 
-    # def calculateVelocity(self):
+    def calculateVelocity(self):
     #     #this is called from onstep() so time is accounted for 
     #     self.vX = (self.posX - self.prevPosX)
     #     self.vY = (self.posY - self.prevPosY)
-    #     self.velocity = ((self.prevPosX - self.posX)**2 + (self.prevPosY - self.posY)**2)**0.5
-    #     self.prevPosX = self.posX
-    #     self.prevPosY = self.posY  
+        self.velocity = ((self.prevPosX - self.posX)**2 + (self.prevPosY - self.posY)**2)**0.5
+        self.prevPosX = self.posX
+        self.prevPosY = self.posY  
 
     def playerControls(self, keys, key):
         if 'right' in keys:
@@ -68,8 +68,9 @@ class Player():
             self.moveLeft = True
         if 'down' in keys: 
             self.crouch = True
-        if 'up' in keys and self.onGround:
+        if 'up' in keys:
             self.jump = True
+            
         # checking if player has released the key
         if 'right' == key:
             self.moveRight = False
@@ -90,9 +91,10 @@ class Player():
                 self.dx = self.movementSpeed
             if self.moveLeft:
                 self.dx = -self.movementSpeed
-            if self.jump:
+            if self.jump and self.onGround:
                 self.vY = self.jumpHeight
                 self.jump = False
+                self.onGround = False
 
             self.vY += self.gravityStrength 
             if self.vY > self.terminalVelocityY:
@@ -104,7 +106,7 @@ class Player():
             Player.checkCollisions(self, 'left')
             Player.checkCollisions(self, 'top')
             Player.checkCollisions(self, 'bottom')
-            print('up hi dy',self.dy, self.dy + self.posY)
+            
             self.posX += self.dx
             self.posY += self.dy
             
@@ -145,11 +147,12 @@ class Player():
                                 if Player.rectanglesOverlap(self.posX + self.dx, self.posY, self.width, self.height, 
                                                             object.x, object.y, object.width, object.height):
                                     
-                                    if self.vX < 0:
-                                        self.dx = object.left() - self.posX
-                                    elif self.vX > 0:
-                                        self.dx = object.right() - self.posX  + self.width  
-                                    self.vx = 0
+                                    # if self.vX < 0:
+                                    #     self.dx = object.left() - self.posX
+                                    # elif self.vX > 0:
+                                    #     self.dx = object.right() - self.posX  + self.width  
+                                    # self.vx = 0
+                                    self.dx = 0
                                        
         if axis == 'top' or axis == 'bottom':
             col = int(self.posX // app.tileWidth)
@@ -168,8 +171,9 @@ class Player():
                                         self.vY = 0
                                         self.dy = object.bottom() - self.posY
                                         
+                                        
                                     elif self.vY >= 0:
-                                        print(self.height)
+                                        
                                         self.vY = 0
                                         self.dy = object.top() - (self.posY + self.height)
                                         self.dy = 0

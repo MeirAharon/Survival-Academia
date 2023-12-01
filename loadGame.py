@@ -8,6 +8,7 @@ from button import *
 app.height = 720
 app.width = 1280
 def onAppStart(app):
+    
     start_createMenu(app)
     inGame_createLevel(app)
     inGame_createFrame(app)
@@ -138,7 +139,7 @@ def levelEditor_onKeyHold(app, keys):
 
 def levelEditor_onMousePress(app, mouseX, mouseY):
 
-    print('in mouse press')
+    
     if app.tileSelected and mouseX < 880 and mouseY < 600 and not app.deleteTile:
         #list we are building for saving a level
         app.tilesPlaced[mouseY // 50][ (-1 *app.levelEditorScroll + mouseX) // 50 ] = app.tileNumber
@@ -148,7 +149,7 @@ def levelEditor_onMousePress(app, mouseX, mouseY):
         if app.tileDictionary.get((mouseY // 50, (-1 * app.levelEditorScroll + mouseX) // 50)) != None:
             app.tilesPlaced[mouseY // 50][ (-1 *app.levelEditorScroll + mouseX) // 50 ] = 20 # THIS IS WHERE IM SETTING MAP VALUES GETTING DELETED
             popped = app.tileDictionary.pop((mouseY // 50, (-1 * app.levelEditorScroll + mouseX) // 50))
-            print('indeletetile', popped)
+            
         
         
     for tile in app.editorTileButtons:
@@ -166,15 +167,17 @@ def levelEditor_onMousePress(app, mouseX, mouseY):
             app.tileNumber = tile.imgNum
             
 def levelEditor_saveLevel(app):
+    
     level = open("level1.txt", "w")
     for row in app.tilesPlaced:
-        print(row)
+        
         level.write(' '.join([str(item) for item in row])+'\n')
     level.close()
     level = open("level1.txt", "r")
     
 
 def levelEditor_loadLevel(app):
+    app.tilesPlaced = []
     level = open("level1.txt", "r")
     for row, line in enumerate(level):
         # for col, char in enumerate(line.split()):
@@ -194,6 +197,7 @@ def levelEditor_loadLevel(app):
 # IN_GAME SCREEN
 #
 def inGame_createLevel(app):
+
     app.gameStartTime = time.time()
     app.gameTimeLimit = 120
     app.stepsPerSecond = 60
@@ -213,10 +217,10 @@ def inGame_createLevel(app):
     level = open("level1.txt", "r")
     for line in (level):           
         app.level.append([int(char) for char in line.split()])
-        print(app.level)            
+                    
     level.close()
     level = open("level1.txt", "r")
-    print(app.level)
+
     
     for row in range(len(app.level)):
         for col in range(len(app.level[row])):
@@ -224,6 +228,7 @@ def inGame_createLevel(app):
                 x = int(col * app.tileWidth)
                 y = int(row * app.tileHeight)
                 app.tileList.append(Tile(x, y, app.level[row][col]))
+    print(app.tileList)            
             
 def inGame_createFrame(app):
     app.frameRight = False
@@ -232,7 +237,7 @@ def inGame_createFrame(app):
     app.frameSpeed = 5
   
 def inGame_createPlayer(app):
-    app.meir = Player(100, 500, 10)    
+    app.meir = Player(100, 500, 5)    
 
 def inGame_createCollisionBoard(app):
     
@@ -263,8 +268,9 @@ def inGame_drawLevel(app):
     for i in range((app.levelCols)):
         drawLine(app.tileWidth * i, 0, app.tileWidth * i, app.height)     
 
-    for tile in app.tileList:
-        drawImage(tile.img, tile.x, tile.y, width=app.tileWidth, height=app.tileHeight, fill = 'yellow')    
+    for tile in app.tileList: # this is why game runs slowly
+    
+        drawImage(tile.img, tile.x, tile.y, width=app.tileWidth, height=app.tileHeight)    
 
 def inGame_redrawAll(app):
     
@@ -299,6 +305,7 @@ def inGame_onKeyRelease(app, key):
 def inGame_onStep(app):
     inGame_setFrame(app)
     app.meir.updatePlayer() 
+    app.meir.calculateVelocity()
     if time.time() - app.gameStartTime > app.gameTimeLimit:
         app.meir.alive = False
         setActiveScreen("gameOver")
