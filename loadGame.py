@@ -15,7 +15,6 @@ def onAppStart(app):
     inGame_createPlayer(app)
     inGame_createCollisionBoard(app)
     levelEditor_createLevelEditor(app)
-    levelEditor_loadLevel(app)
     gameOver_createScreen(app)
     app.playState = True
     app.spriteCounter = 0
@@ -167,8 +166,9 @@ def levelEditor_onMousePress(app, mouseX, mouseY):
             app.tileNumber = tile.imgNum
             
 def levelEditor_saveLevel(app):
-    
+    open('level1.txt', 'w').close()
     level = open("level1.txt", "w")
+    print(app.tilesPlaced)
     for row in app.tilesPlaced:
         
         level.write(' '.join([str(item) for item in row])+'\n')
