@@ -15,8 +15,8 @@ class Player():
         self.moveLeft = False
         self.jump = False
         self.gravityBoolean = True
-        self.jumpHeight = -23
-        self.gravityStrength = 2
+        self.jumpHeight = -24
+        self.gravityStrength = 2.2
         self.prevPosX = x
         self.prevPosY = y
         self.posX = x
@@ -31,10 +31,10 @@ class Player():
         self.gX = 0
         self.gY = 1
         self.velocity = 0
-        self.terminalVelocityY = 5
+        self.terminalVelocityY = 8
         self.terminalVelocityX = 5
         self.width = 40
-        self.height = 70
+        self.height = 50
         self.spriteDirection = 'right'
         self.flip = 0
         self.spriteCounter = 0
@@ -95,7 +95,6 @@ class Player():
                 self.vX = -self.movementSpeed
             if self.jump and self.onGround:
                 self.vY = self.jumpHeight
-                self.jump = False
                 self.onGround = False
 
             self.vY += self.gravityStrength 
@@ -111,6 +110,8 @@ class Player():
             
             self.posX += self.dx
             self.posY += self.dy
+            if self.posX < 0:
+                self.posX = 0 
             
             
     def getRange(self, row, col):
@@ -138,7 +139,7 @@ class Player():
 
         if axis == 'right' or axis == 'left':
             
-            col = int(((self.posX - scroll) + self.dx) // app.tileWidth)
+            col = int(((self.posX - scroll ) + self.dx) // app.tileWidth)
             row = int(self.posY // app.tileHeight)
             Player.getRange(self,row,col)
             
@@ -146,16 +147,19 @@ class Player():
                 for j in range(self.rangeStartCols, self.rangeEndCols):
                     for object in app.tileDict[(row + i, col + j)]:
                         if isinstance(object, Tile):
-                                if Player.rectanglesOverlap(self.posX + self.dx - scroll, self.posY, self.width, self.height, 
+                                if Player.rectanglesOverlap((self.posX + self.dx) - scroll, self.posY, self.width, self.height, 
                                                             object.x, object.y, object.width, object.height):
                                     
-                                    if self.vX < 0:
-                                        self.dx = object.right() + (self.posX)
-                                    elif self.vX > 0:
-                                        self.dx = object.left() - (self.posX + self.width) 
-                                    self.vx = 0
-                                    return True
+
+                                    self.dx = 0
                                     
+                                    # if self.vX < 0:
+                                    #     self.dx = object.right() + (self.posX)
+                                    # elif self.vX > 0:
+                                    #     self.dx = (  ((self.posX + self.width)) - object.left()) 
+                                    # self.vx = 0
+                                    return True
+                                   
                                        
         if axis == 'top' or axis == 'bottom':
             col = int((self.posX - scroll)// app.tileWidth)
@@ -170,17 +174,20 @@ class Player():
                                 if Player.rectanglesOverlap(self.posX - scroll, self.posY + self.dy, self.width, self.height, 
                                                             object.x, object.y, object.width, object.height):
                                     
-                                    if self.vY < 0:
-                                        self.vY = 0
-                                        self.dy = object.bottom() - self.posY
+                                    self.dy = 0
+                                    self.onGround = True
+                                    
+                                    # if self.vY < 0:
+                                    #     self.vY = 0
+                                    #     self.dy = object.bottom() - self.posY
                                         
                                         
-                                    elif self.vY >= 0:
+                                    # elif self.vY >= 0:
                                         
-                                        self.vY = 0
-                                        self.dy = object.top() - (self.posY + self.height)
-                                        self.dy = 0
-                                        self.onGround = True
+                                    #     self.vY = 0
+                                    #     self.dy = object.top() - (self.posY + self.height)
+                                    #     self.dy = 0
+                                    #     self.onGround = True
         
                                 
     def rectanglesOverlap(left1, top1, width1, height1,
@@ -198,10 +205,10 @@ class Player():
 
     def drawPlayer(self):
         if self.flip:
-            drawImage(self.sprites[self.spriteCounter], self.posX, self.posY)
+            drawImage(self.sprites[self.spriteCounter], self.posX, self.posY, height = 50)
             drawRect(self.posX, self.posY, self.width, self.height, fill = None, border = 'black' ) 
         else:
-            drawImage(self.sprites[self.spriteCounter], self.posX, self.posY)
+            drawImage(self.sprites[self.spriteCounter], self.posX, self.posY, height = 50)
             drawRect(self.posX, self.posY, self.width, self.height, fill = None, border = 'black' )
 
 def openImage(fileName):

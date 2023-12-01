@@ -199,7 +199,7 @@ def levelEditor_loadLevel(app):
 def inGame_createLevel(app):
 
     app.gameStartTime = time.time()
-    app.gameTimeLimit = 120
+    app.gameTimeLimit = 450
     app.stepsPerSecond = 60
     app.charList = []
     app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
@@ -253,8 +253,8 @@ def inGame_createCollisionBoard(app):
         app.tileDict[(row,col)].append(tile)
           
 def inGame_setFrame(app):
-    if not app.meir.checkCollisions(app, app.frameScroll):
-    
+    if not app.meir.checkCollisions( "right", app.frameScroll):
+        print('in if statement 257')
         if app.frameRight:
             app.frameScroll -= app.frameSpeed
         if app.frameLeft and app.frameScroll < 0:
@@ -264,19 +264,18 @@ def inGame_drawLevel(app):
 
        
     for i in range(5):
-        drawImage(app.levelBackground,i * app.width + app.frameScroll, 0)
+        drawImage(app.levelBackground,i * app.width + app.frameScroll * 1.7, 0)
     # for i in range((app.levelRows)):
     #     drawLine(0, app.tileHeight * i, app.width, app.tileHeight * i)
     # for i in range((app.levelCols)):
     #     drawLine(app.tileWidth * i, 0, app.tileWidth * i, app.height)     
 
-    for tile in app.tileList: # this is why game runs slowly
-
+    for tile in app.tileList: 
 
         drawImage(tile.img, tile.x + app.frameScroll, tile.y, width=app.tileWidth, height=app.tileHeight)    
 
 def inGame_redrawAll(app):
-    
+
     if not app.playState:
         drawMenu(app)
     else:
@@ -309,6 +308,9 @@ def inGame_onStep(app):
     inGame_setFrame(app)
     app.meir.updatePlayer(app.frameScroll) 
     app.meir.calculateVelocity()
+    print(app.meir.posX)
+    if app.meir.posX > 10000:
+        setActiveScreen("gameOver")
     if time.time() - app.gameStartTime > app.gameTimeLimit:
         app.meir.alive = False
         setActiveScreen("gameOver")
