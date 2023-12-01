@@ -81,7 +81,7 @@ class Player():
         if 'up' == key:
             self.jump = False  
     
-    def updatePlayer(self, scroll):
+    def updatePlayer(self):
         
         
         self.dx = 0
@@ -103,10 +103,10 @@ class Player():
                            
             self.dy += self.vY
 
-            Player.checkCollisions(self, 'right', scroll)
-            Player.checkCollisions(self, 'left', scroll)
-            Player.checkCollisions(self, 'top', scroll)
-            Player.checkCollisions(self, 'bottom', scroll)
+            Player.checkCollisions(self, 'right')
+            Player.checkCollisions(self, 'left')
+            Player.checkCollisions(self, 'top')
+            Player.checkCollisions(self, 'bottom')
             
             self.posX += self.dx
             self.posY += self.dy
@@ -135,11 +135,11 @@ class Player():
             self.rangeEndRows = 2
             self.rangeStartCols = -1
             self.rangeEndCols = 2
-    def checkCollisions(self, axis, scroll):
+    def checkCollisions(self, axis):
 
         if axis == 'right' or axis == 'left':
             
-            col = int(((self.posX - scroll ) + self.dx) // app.tileWidth)
+            col = int((self.posX + self.dx) // app.tileWidth)
             row = int(self.posY // app.tileHeight)
             Player.getRange(self,row,col)
             
@@ -147,7 +147,7 @@ class Player():
                 for j in range(self.rangeStartCols, self.rangeEndCols):
                     for object in app.tileDict[(row + i, col + j)]:
                         if isinstance(object, Tile):
-                                if Player.rectanglesOverlap((self.posX + self.dx) - scroll, self.posY, self.width, self.height, 
+                                if Player.rectanglesOverlap(self.posX + self.dx, self.posY, self.width, self.height, 
                                                             object.x, object.y, object.width, object.height):
                                     
 
@@ -162,7 +162,7 @@ class Player():
                                    
                                        
         if axis == 'top' or axis == 'bottom':
-            col = int((self.posX - scroll)// app.tileWidth)
+            col = int((self.posX)// app.tileWidth)
             row = int((self.posY + self.dy) // app.tileHeight)
             
             Player.getRange(self,row,col)
@@ -171,7 +171,7 @@ class Player():
                 for j in range(self.rangeStartCols, self.rangeEndCols):
                     for object in app.tileDict[(row + i, col + j)]:
                         if isinstance(object, Tile):
-                                if Player.rectanglesOverlap(self.posX - scroll, self.posY + self.dy, self.width, self.height, 
+                                if Player.rectanglesOverlap(self.posX, self.posY + self.dy, self.width, self.height, 
                                                             object.x, object.y, object.width, object.height):
                                     
                                     self.dy = 0
@@ -203,13 +203,13 @@ class Player():
         return distance
             
 
-    def drawPlayer(self):
+    def drawPlayer(self, scroll):
         if self.flip:
-            drawImage(self.sprites[self.spriteCounter], self.posX, self.posY, height = 50)
-            drawRect(self.posX, self.posY, self.width, self.height, fill = None, border = 'black' ) 
+            drawImage(self.sprites[self.spriteCounter], self.posX + scroll, self.posY, height = 50)
+            drawRect(self.posX + scroll, self.posY, self.width, self.height, fill = None, border = 'black' ) 
         else:
-            drawImage(self.sprites[self.spriteCounter], self.posX, self.posY, height = 50)
-            drawRect(self.posX, self.posY, self.width, self.height, fill = None, border = 'black' )
+            drawImage(self.sprites[self.spriteCounter], self.posX + scroll, self.posY, height = 50)
+            drawRect(self.posX + scroll, self.posY, self.width, self.height, fill = None, border = 'black' )
 
 def openImage(fileName):
         return Image.open(os.path.join(pathlib.Path(__file__).parent,fileName))                

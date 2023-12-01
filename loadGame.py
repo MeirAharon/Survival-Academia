@@ -253,12 +253,10 @@ def inGame_createCollisionBoard(app):
         app.tileDict[(row,col)].append(tile)
           
 def inGame_setFrame(app):
-    if not app.meir.checkCollisions( "right", app.frameScroll):
-        print('in if statement 257')
-        if app.frameRight:
-            app.frameScroll -= app.frameSpeed
-        if app.frameLeft and app.frameScroll < 0:
-            app.frameScroll += app.frameSpeed 
+    if app.frameRight:
+        app.frameScroll -= app.frameSpeed
+    if app.frameLeft and app.frameScroll < 0:
+        app.frameScroll += app.frameSpeed 
 
 def inGame_drawLevel(app):
 
@@ -280,7 +278,7 @@ def inGame_redrawAll(app):
         drawMenu(app)
     else:
         inGame_drawLevel(app)
-        app.meir.drawPlayer()   
+        app.meir.drawPlayer(app.frameScroll)   
         rectWidth, rectHeight = app.meir.playerRectSize[0]  
         drawLabel(f'v({app.meir.velocity} pixels per second)', app.meir.posX + rectWidth, app.meir.posY + rectHeight + 20, size = 30)
         
@@ -306,7 +304,7 @@ def inGame_onKeyRelease(app, key):
 
 def inGame_onStep(app):
     inGame_setFrame(app)
-    app.meir.updatePlayer(app.frameScroll) 
+    app.meir.updatePlayer() 
     app.meir.calculateVelocity()
     print(app.meir.posX)
     if app.meir.posX > 10000:
