@@ -81,7 +81,7 @@ class Player():
         if 'up' == key:
             self.jump = False  
     
-    def updatePlayer(self):
+    def updatePlayer(self, scroll):
         
         
         self.dx = 0
@@ -89,8 +89,10 @@ class Player():
         if self.alive:
             if self.moveRight:
                 self.dx = self.movementSpeed
+                self.vX = self.movementSpeed
             if self.moveLeft:
                 self.dx = -self.movementSpeed
+                self.vX = -self.movementSpeed
             if self.jump and self.onGround:
                 self.vY = self.jumpHeight
                 self.jump = False
@@ -102,10 +104,10 @@ class Player():
                            
             self.dy += self.vY
 
-            Player.checkCollisions(self, 'right')
-            Player.checkCollisions(self, 'left')
-            Player.checkCollisions(self, 'top')
-            Player.checkCollisions(self, 'bottom')
+            Player.checkCollisions(self, 'right', scroll)
+            Player.checkCollisions(self, 'left', scroll)
+            Player.checkCollisions(self, 'top', scroll)
+            Player.checkCollisions(self, 'bottom', scroll)
             
             self.posX += self.dx
             self.posY += self.dy
@@ -132,11 +134,11 @@ class Player():
             self.rangeEndRows = 2
             self.rangeStartCols = -1
             self.rangeEndCols = 2
-    def checkCollisions(self, axis):
+    def checkCollisions(self, axis, scroll):
 
         if axis == 'right' or axis == 'left':
             
-            col = int((self.posX + self.dx) // app.tileWidth)
+            col = int(((self.posX - scroll) + self.dx) // app.tileWidth)
             row = int(self.posY // app.tileHeight)
             Player.getRange(self,row,col)
             
@@ -144,18 +146,19 @@ class Player():
                 for j in range(self.rangeStartCols, self.rangeEndCols):
                     for object in app.tileDict[(row + i, col + j)]:
                         if isinstance(object, Tile):
-                                if Player.rectanglesOverlap(self.posX + self.dx, self.posY, self.width, self.height, 
+                                if Player.rectanglesOverlap(self.posX + self.dx - scroll, self.posY, self.width, self.height, 
                                                             object.x, object.y, object.width, object.height):
                                     
-                                    # if self.vX < 0:
-                                    #     self.dx = object.left() - self.posX
-                                    # elif self.vX > 0:
-                                    #     self.dx = object.right() - self.posX  + self.width  
-                                    # self.vx = 0
-                                    self.dx = 0
+                                    if self.vX < 0:
+                                        self.dx = object.right() + (self.posX)
+                                    elif self.vX > 0:
+                                        self.dx = object.left() - (self.posX + self.width) 
+                                    self.vx = 0
+                                    return True
+                                    
                                        
         if axis == 'top' or axis == 'bottom':
-            col = int(self.posX // app.tileWidth)
+            col = int((self.posX - scroll)// app.tileWidth)
             row = int((self.posY + self.dy) // app.tileHeight)
             
             Player.getRange(self,row,col)
@@ -164,7 +167,7 @@ class Player():
                 for j in range(self.rangeStartCols, self.rangeEndCols):
                     for object in app.tileDict[(row + i, col + j)]:
                         if isinstance(object, Tile):
-                                if Player.rectanglesOverlap(self.posX, self.posY + self.dy, self.width, self.height, 
+                                if Player.rectanglesOverlap(self.posX - scroll, self.posY + self.dy, self.width, self.height, 
                                                             object.x, object.y, object.width, object.height):
                                     
                                     if self.vY < 0:

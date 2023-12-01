@@ -253,24 +253,27 @@ def inGame_createCollisionBoard(app):
         app.tileDict[(row,col)].append(tile)
           
 def inGame_setFrame(app):
+    if not app.meir.checkCollisions(app, app.frameScroll):
     
-    if app.frameRight:
-        app.frameScroll -= app.frameSpeed
-    if app.frameLeft and app.frameScroll > 0:
-        app.frameScroll += app.frameSpeed 
+        if app.frameRight:
+            app.frameScroll -= app.frameSpeed
+        if app.frameLeft and app.frameScroll < 0:
+            app.frameScroll += app.frameSpeed 
 
 def inGame_drawLevel(app):
+
        
     for i in range(5):
         drawImage(app.levelBackground,i * app.width + app.frameScroll, 0)
-    for i in range((app.levelRows)):
-        drawLine(0, app.tileHeight * i, app.width, app.tileHeight * i)
-    for i in range((app.levelCols)):
-        drawLine(app.tileWidth * i, 0, app.tileWidth * i, app.height)     
+    # for i in range((app.levelRows)):
+    #     drawLine(0, app.tileHeight * i, app.width, app.tileHeight * i)
+    # for i in range((app.levelCols)):
+    #     drawLine(app.tileWidth * i, 0, app.tileWidth * i, app.height)     
 
     for tile in app.tileList: # this is why game runs slowly
-    
-        drawImage(tile.img, tile.x, tile.y, width=app.tileWidth, height=app.tileHeight)    
+
+
+        drawImage(tile.img, tile.x + app.frameScroll, tile.y, width=app.tileWidth, height=app.tileHeight)    
 
 def inGame_redrawAll(app):
     
@@ -304,7 +307,7 @@ def inGame_onKeyRelease(app, key):
 
 def inGame_onStep(app):
     inGame_setFrame(app)
-    app.meir.updatePlayer() 
+    app.meir.updatePlayer(app.frameScroll) 
     app.meir.calculateVelocity()
     if time.time() - app.gameStartTime > app.gameTimeLimit:
         app.meir.alive = False
