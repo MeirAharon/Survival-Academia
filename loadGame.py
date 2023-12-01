@@ -198,7 +198,7 @@ def levelEditor_loadLevel(app):
 #
 def inGame_createLevel(app):
 
-    app.gameStartTime = time.time()
+    app.gameStartTime = int(time.time())
     app.gameTimeLimit = 45
     app.stepsPerSecond = 60
     app.charList = []
@@ -259,10 +259,10 @@ def inGame_setFrame(app):
         app.frameScroll += app.frameSpeed 
 
 def inGame_drawLevel(app):
+    
 
-       
     for i in range(5):
-        drawImage(app.levelBackground,i * app.width + app.frameScroll * 1.7, 0)
+        drawImage(app.levelBackground,i * app.width + app.frameScroll, 0)
     # for i in range((app.levelRows)):
     #     drawLine(0, app.tileHeight * i, app.width, app.tileHeight * i)
     # for i in range((app.levelCols)):
@@ -272,16 +272,17 @@ def inGame_drawLevel(app):
         
         drawImage(tile.img, tile.x + app.frameScroll, tile.y, width=app.tileWidth, height=app.tileHeight) 
            
-
+    drawLabel(f'Distance to Win: {2500 - app.meir.posX}', 1100, 20, fill = 'white', size = 36)       
+    drawLabel(f'Time Left: {app.gameTimeLimit - (int(time.time()) - app.gameStartTime)}', 1140, 60, fill = 'white', size = 36)
+    
 def inGame_redrawAll(app):
 
     if not app.playState:
         drawMenu(app)
     else:
         inGame_drawLevel(app)
-        app.meir.drawPlayer(app.frameScroll)   
-        rectWidth, rectHeight = app.meir.playerRectSize[0]  
-        drawLabel(f'v({app.meir.velocity} pixels per second)', app.meir.posX + rectWidth, app.meir.posY + rectHeight + 20, size = 30)
+        app.meir.drawPlayer(app.frameScroll)     
+        
         
 def inGame_onMousePress(app, mouseX, mouseY):
     if not app.playState and clickDistance(mouseX, mouseY, app.width//2 - app.startButtonWidth//2,

@@ -46,12 +46,13 @@ class Player():
         self.onGround = False
 
         for i in range(0, 8):
-            sprite = CMUImage(self.spritestrip.crop((45*i, 0, 45+45*i, 75)))
+            sprite = openImage(f"assets/playerSprites/sprite{i}.png")
+            sprite = CMUImage(sprite)
             self.sprites.append(sprite)
-            self.playerRectSize.append((sprite.image.width, sprite.image.height))
+            self.playerRectSize.append((sprite.image.width - self.movementSpeed, sprite.image.height - self.terminalVelocityY))
             self.sprite = self.sprites[0]    
 
-        # self.width, self.height = self.playerRectSize[0]
+        self.width, self.height = self.playerRectSize[0]
 
     def calculateVelocity(self):
     #     #this is called from onstep() so time is accounted for 
@@ -88,9 +89,11 @@ class Player():
         self.dy = 0
         if self.alive:
             if self.moveRight:
+                self.moving = True
                 self.dx = self.movementSpeed
                 self.vX = self.movementSpeed
             if self.moveLeft:
+                self.moving = True
                 self.dx = -self.movementSpeed
                 self.vX = -self.movementSpeed
             if self.jump and self.onGround:
