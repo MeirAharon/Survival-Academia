@@ -8,13 +8,14 @@ from button import *
 app.height = 720
 app.width = 1280
 def onAppStart(app):
-    createMenu(app)
-    createLevel(app)
-    createFrame(app)
-    createPlayer(app)
-    createCollisionBoard(app)
-    createLevelEditor(app)
-    loadLevel(app)
+    start_createMenu(app)
+    inGame_createLevel(app)
+    inGame_createFrame(app)
+    inGame_createPlayer(app)
+    inGame_createCollisionBoard(app)
+    levelEditor_createLevelEditor(app)
+    levelEditor_loadLevel(app)
+    gameOver_createScreen(app)
     app.playState = True
     app.spriteCounter = 0
     app.stepsPerSecond = 60
@@ -22,7 +23,7 @@ def onAppStart(app):
 #
 # MENU SCREEN
 #
-def createMenu(app):
+def start_createMenu(app):
 
     app.menuBackground = openImage("assets/menuBackground.png")
     app.menuBackground = CMUImage(app.menuBackground)
@@ -70,9 +71,9 @@ def start_onStep(app):
 #
 #LEVEL EDITOR
 #
-def createLevelEditor(app):
+def levelEditor_createLevelEditor(app):
     app.levelEditorScroll = 0
-    app.levelEditorButtonNames = ["deselect", "back", "save", "delete"]
+    app.levelEditorButtonNames = ["deselect", "back", "save", "delete", "load"]
     app.background = rgb(122, 223, 253)
     app.editorRows = 12
     app.editorCols = 60
@@ -93,7 +94,7 @@ def createLevelEditor(app):
         tileImage = CMUImage(tileImage)
         app.editorTileButtons.append(Button(900 + (i*60 )%180, 50 + (i//3)*100, tileWidth, tileHeight, i, tileImage))
 
-    for i in range(4):
+    for i in range(5):
         buttonImage = openImage(f"assets\\levelEditorButtons\\button{i}.png" )   
         buttonWidth, buttonHeight = 100, 60
         buttonImage = CMUImage(buttonImage)
@@ -101,7 +102,9 @@ def createLevelEditor(app):
         if i == 2:
             app.editorTileButtons.append(Button(50, 620, buttonWidth, buttonHeight, i, buttonImage, imgName))
         elif i == 3:
-            app.editorTileButtons.append(Button(920 + buttonWidth, 520, buttonWidth, buttonHeight, i, buttonImage, imgName))        
+            app.editorTileButtons.append(Button(920 + buttonWidth, 520, buttonWidth, buttonHeight, i, buttonImage, imgName)) 
+        elif i == 4:
+            app.editorTileButtons.append(Button(70 + buttonWidth, 620, buttonWidth, buttonHeight, i, buttonImage, imgName))      
         else:
             app.editorTileButtons.append(Button(900, 520 + i*(buttonHeight + 20), buttonWidth, buttonHeight, i, buttonImage, imgName))
 
@@ -123,7 +126,7 @@ def levelEditor_redrawAll(app):
     drawRect(880,0,880,app.height, fill = rgb(122, 223, 253))
     drawRect(0, 600, 880, app.height, fill = rgb(122, 223, 253) )
     for tile in app.editorTileButtons:
-        drawImage(tile.img, tile.x, tile.y, width = tile.width, height=tile.height)    
+        drawImage(tile.img, tile.x, tile.y, width = tile.width, height=tile.height)        
 
 def levelEditor_onKeyHold(app, keys):
     if 'right' in keys:
@@ -153,33 +156,47 @@ def levelEditor_onMousePress(app, mouseX, mouseY):
             if tile.imgName == "back":
                 setActiveScreen("start")
             elif tile.imgName == "save":
-                saveLevel(app) 
+                levelEditor_saveLevel(app) 
             elif tile.imgName == "delete":
                 app.deleteTile = not app.deleteTile
+            elif tile.imgName == "load":
+                levelEditor_loadLevel(app)    
                 
             app.tileSelected = True
             app.tileNumber = tile.imgNum
             
-def saveLevel(app):
+def levelEditor_saveLevel(app):
     level = open("level1.txt", "w")
     for row in app.tilesPlaced:
         print(row)
         level.write(' '.join([str(item) for item in row])+'\n')
     level.close()
     level = open("level1.txt", "r")
-    loadLevel(app)
+    
 
-def loadLevel(app):
+def levelEditor_loadLevel(app):
     level = open("level1.txt", "r")
-    for line in (level):           
-            app.level.append([int(char) for char in line.split()])            
+    for row, line in enumerate(level):
+        # for col, char in enumerate(line.split()):
+
+        app.tilesPlaced.append([int(char) for char in line.split()])            
     level.close()
     level = open("level1.txt", "r")
+
+    # for row in range(len(app.level)):
+    #     for col in range(len(app.level[row])):
+    #         if app.level[row][col] != 20:
+    #             x = int(col * app.tileWidth)
+    #             y = int(row * app.tileHeight)
+    #             app.tileList.append(Tile(x, y, app.level[row][col]))
 
 #
 # IN_GAME SCREEN
 #
-def createLevel(app):
+def inGame_createLevel(app):
+    app.gameStartTime = time.time()
+    app.gameTimeLimit = 120
+    app.stepsPerSecond = 60
     app.charList = []
     app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
     app.levelBackground = CMUImage(app.levelBackground)
@@ -208,16 +225,16 @@ def createLevel(app):
                 y = int(row * app.tileHeight)
                 app.tileList.append(Tile(x, y, app.level[row][col]))
             
-def createFrame(app):
+def inGame_createFrame(app):
     app.frameRight = False
     app.frameLeft = False
     app.frameScroll = 0
     app.frameSpeed = 5
   
-def createPlayer(app):
+def inGame_createPlayer(app):
     app.meir = Player(100, 500, 10)    
 
-def createCollisionBoard(app):
+def inGame_createCollisionBoard(app):
     
     app.tileDict = dict()
     
@@ -230,14 +247,14 @@ def createCollisionBoard(app):
         col = int(tile.x  // Tile.width)
         app.tileDict[(row,col)].append(tile)
           
-def setFrame(app):
+def inGame_setFrame(app):
     
     if app.frameRight:
         app.frameScroll -= app.frameSpeed
     if app.frameLeft and app.frameScroll > 0:
         app.frameScroll += app.frameSpeed 
 
-def drawLevel(app):
+def inGame_drawLevel(app):
        
     for i in range(5):
         drawImage(app.levelBackground,i * app.width + app.frameScroll, 0)
@@ -254,7 +271,7 @@ def inGame_redrawAll(app):
     if not app.playState:
         drawMenu(app)
     else:
-        drawLevel(app)
+        inGame_drawLevel(app)
         app.meir.drawPlayer()   
         rectWidth, rectHeight = app.meir.playerRectSize[0]  
         drawLabel(f'v({app.meir.velocity} pixels per second)', app.meir.posX + rectWidth, app.meir.posY + rectHeight + 20, size = 30)
@@ -280,10 +297,23 @@ def inGame_onKeyRelease(app, key):
         app.frameLeft = False  
 
 def inGame_onStep(app):
-    setFrame(app)
+    inGame_setFrame(app)
     app.meir.updatePlayer() 
-              
+    if time.time() - app.gameStartTime > app.gameTimeLimit:
+        app.meir.alive = False
+        setActiveScreen("gameOver")
+#
+# GAME OVER SCREEN
+# 
+def gameOver_createScreen(app):
+    app.gameOverBackground = openImage("assets/sunsetBackgroundLevel.png")
+    app.gameOverBackground = CMUImage(app.gameOverBackground)
+    app.gameOverText = openImage("assets/gameOver.png")
+    app.gameOverText = CMUImage(app.gameOverText)              
+def gameOver_redrawAll(app):
     
+    drawImage(app.gameOverBackground, 0, 0)
+    drawImage(app.gameOverText, 0, 0)    
     
 def openImage(fileName):
         return Image.open(os.path.join(pathlib.Path(__file__).parent,fileName))

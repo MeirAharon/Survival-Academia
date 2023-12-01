@@ -107,7 +107,7 @@ class Player():
             print('up hi dy',self.dy, self.dy + self.posY)
             self.posX += self.dx
             self.posY += self.dy
-            Player.checkCollisions(self, 'bottom')
+            
             
     def getRange(self, row, col):
         if row == 0 and col == 0:
@@ -145,18 +145,12 @@ class Player():
                                 if Player.rectanglesOverlap(self.posX + self.dx, self.posY, self.width, self.height, 
                                                             object.x, object.y, object.width, object.height):
                                     
-                                    # self.dx = 0
-                                    # not done here
                                     if self.vX < 0:
-                                        print('collided, moving left')
                                         self.dx = object.left() - self.posX
                                     elif self.vX > 0:
-                                        print('collided, moving right')
                                         self.dx = object.right() - self.posX  + self.width  
                                     self.vx = 0
                                        
-                                    
-                
         if axis == 'top' or axis == 'bottom':
             col = int(self.posX // app.tileWidth)
             row = int((self.posY + self.dy) // app.tileHeight)
@@ -169,24 +163,19 @@ class Player():
                         if isinstance(object, Tile):
                                 if Player.rectanglesOverlap(self.posX, self.posY + self.dy, self.width, self.height, 
                                                             object.x, object.y, object.width, object.height):
-                                    print('vy',self.vY)
+                                    
                                     if self.vY < 0:
                                         self.vY = 0
                                         self.dy = object.bottom() - self.posY
                                         
                                     elif self.vY >= 0:
                                         print(self.height)
-                                        print('bob', object.top(), (self.posY), 'y tile', object.y, 'self y', self.posY + self.height )
                                         self.vY = 0
                                         self.dy = object.top() - (self.posY + self.height)
                                         self.dy = 0
                                         self.onGround = True
-                                else:        
-                                    print('didnt collide', 'vy', self.vY, 'dy', self.dy )        
-                                        
-                                    
-                
-    
+        
+                                
     def rectanglesOverlap(left1, top1, width1, height1,
                             left2, top2, width2, height2):
         bottom1 = top1 + height1
