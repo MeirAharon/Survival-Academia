@@ -199,7 +199,7 @@ def levelEditor_loadLevel(app):
 def inGame_createLevel(app):
 
     app.gameStartTime = int(time.time())
-    app.gameTimeLimit = 45
+    app.gameTimeLimit = 450
     app.stepsPerSecond = 60
     app.charList = []
     app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
@@ -237,7 +237,7 @@ def inGame_createFrame(app):
     app.frameSpeed = 5
   
 def inGame_createPlayer(app):
-    app.meir = Player(100, 500, 5)    
+    app.meir = Player(100, 500, 10)    
 
 def inGame_createCollisionBoard(app):
     
