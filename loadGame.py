@@ -4,6 +4,7 @@ import os, pathlib, time
 from Tile import *
 from Player import *
 from button import *
+from Enemy import *
 
 app.height = 720
 app.width = 1280
@@ -13,6 +14,7 @@ def onAppStart(app):
     inGame_createLevel(app)
     inGame_createFrame(app)
     inGame_createPlayer(app)
+    inGame_createEnemies(app)
     inGame_createCollisionBoard(app)
     levelEditor_createLevelEditor(app)
     gameOver_createScreen(app)
@@ -72,6 +74,8 @@ def start_onStep(app):
 #LEVEL EDITOR
 #
 def levelEditor_createLevelEditor(app):
+    app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
+    app.levelBackground = CMUImage(app.levelBackground)
     app.levelEditorScroll = 0
     app.levelEditorButtonNames = ["deselect", "back", "save", "delete", "load"]
     app.background = rgb(122, 223, 253)
@@ -81,7 +85,7 @@ def levelEditor_createLevelEditor(app):
     app.tileNumber = -1
     app.tileSelected = False
     app.tilesPlaced = []
-    app.tileDictionary = dict()
+    app.worldCollisionDictionary = dict()
     app.deleteTile = False
     # create empty level list
     for row in range(app.editorRows):
@@ -109,13 +113,15 @@ def levelEditor_createLevelEditor(app):
             app.editorTileButtons.append(Button(900, 520 + i*(buttonHeight + 20), buttonWidth, buttonHeight, i, buttonImage, imgName))
 
 def levelEditor_redrawAll(app):
+    for i in range(5):
+        drawImage(app.levelBackground,i * app.width + app.levelEditorScroll, 0)
     
     for row in range(app.editorRows):
         drawLine(0, row * 50, app.width, row * 50)
     for col in range(app.editorCols):
         drawLine(col * 50 + app.levelEditorScroll, 0, col * 50 + app.levelEditorScroll, app.height)
-    for tile in app.tileDictionary:
-        tileImage = openImage(f"assets\\levelEditorButtons\\Tile_{app.tileDictionary[tile]}.png")
+    for tile in app.worldCollisionDictionary:
+        tileImage = openImage(f"assets\\levelEditorButtons\\Tile_{app.worldCollisionDictionary[tile]}.png")
         tileWidth, tileHeight = 50, 50
         tileImage = CMUImage(tileImage)
         row, col = tile
@@ -123,8 +129,8 @@ def levelEditor_redrawAll(app):
         y = int(row*50)
         if x + app.levelEditorScroll  < 880  and y < 600:
             drawImage(tileImage, x + app.levelEditorScroll, y, width = tileWidth, height = tileHeight )    
-    drawRect(880,0,880,app.height, fill = rgb(122, 223, 253))
-    drawRect(0, 600, 880, app.height, fill = rgb(122, 223, 253) )
+    drawRect(880,0,880,app.height, fill = rgb(85, 51, 51))
+    drawRect(0, 600, 880, app.height, fill = rgb(85, 51, 51) )
     for tile in app.editorTileButtons:
         drawImage(tile.img, tile.x, tile.y, width = tile.width, height=tile.height)        
 
@@ -143,11 +149,11 @@ def levelEditor_onMousePress(app, mouseX, mouseY):
         #list we are building for saving a level
         app.tilesPlaced[mouseY // 50][ (-1 *app.levelEditorScroll + mouseX) // 50 ] = app.tileNumber
         #dictionary for drawing in real time
-        app.tileDictionary[(mouseY // 50, (-1 * app.levelEditorScroll + mouseX) // 50)] = app.tileNumber
+        app.worldCollisionDictionary[(mouseY // 50, (-1 * app.levelEditorScroll + mouseX) // 50)] = app.tileNumber
     if app.deleteTile:
-        if app.tileDictionary.get((mouseY // 50, (-1 * app.levelEditorScroll + mouseX) // 50)) != None:
+        if app.worldCollisionDictionary.get((mouseY // 50, (-1 * app.levelEditorScroll + mouseX) // 50)) != None:
             app.tilesPlaced[mouseY // 50][ (-1 *app.levelEditorScroll + mouseX) // 50 ] = 20 # THIS IS WHERE IM SETTING MAP VALUES GETTING DELETED
-            popped = app.tileDictionary.pop((mouseY // 50, (-1 * app.levelEditorScroll + mouseX) // 50))
+            popped = app.worldCollisionDictionary.pop((mouseY // 50, (-1 * app.levelEditorScroll + mouseX) // 50))
             
         
         
@@ -168,7 +174,7 @@ def levelEditor_onMousePress(app, mouseX, mouseY):
 def levelEditor_saveLevel(app):
     open('level1.txt', 'w').close()
     level = open("level1.txt", "w")
-    print(app.tilesPlaced)
+    
     for row in app.tilesPlaced:
         
         level.write(' '.join([str(item) for item in row])+'\n')
@@ -197,7 +203,7 @@ def levelEditor_loadLevel(app):
 # IN_GAME SCREEN
 #
 def inGame_createLevel(app):
-
+    app.scrollMargin = 600
     app.gameStartTime = int(time.time())
     app.gameTimeLimit = 450
     app.stepsPerSecond = 60
@@ -213,6 +219,8 @@ def inGame_createLevel(app):
     app.levelFile = open("level1.txt", "r")
     app.rectList = []
     app.tileList = []
+    app.worldDrawData = []
+    app.enemyList = []
 
     level = open("level1.txt", "r")
     for line in (level):           
@@ -224,12 +232,12 @@ def inGame_createLevel(app):
     
     for row in range(len(app.level)):
         for col in range(len(app.level[row])):
-            if app.level[row][col] != 20:
+            if app.level[row][col] != 20 and app.level[row][col] != 14:
                 x = int(col * app.tileWidth)
                 y = int(row * app.tileHeight)
-                app.tileList.append(Tile(x, y, app.level[row][col]))
-    print(app.tileList)            
-            
+                app.worldDrawData.append(Tile(x, y, app.level[row][col]))
+                
+                        
 def inGame_createFrame(app):
     app.frameRight = False
     app.frameLeft = False
@@ -238,56 +246,71 @@ def inGame_createFrame(app):
   
 def inGame_createPlayer(app):
     app.meir = Player(100, 500, 10)    
+def inGame_createEnemies(app):
+    for row in range(len(app.level)):
+        for col in range(len(app.level[row])):
+            if app.level[row][col] == 14:
+                x = int(col * app.tileWidth)
+                y = int(row * app.tileHeight)
+                app.enemyList.append(Enemy(x, y, 5)) 
 
 def inGame_createCollisionBoard(app):
     
-    app.tileDict = dict()
+    app.worldCollisionDict = dict()
     
-    for row in range(-80, 200):
-        for col in range(-80, 200):
-            app.tileDict[(row, col)] = []
+    for row in range(-8, 20):
+        for col in range(-8, 65):
+            app.worldCollisionDict[(row, col)] = []
              
-    for tile in app.tileList:
+    for tile in app.worldDrawData:
         row = int(tile.y // Tile.height)
         col = int(tile.x  // Tile.width)
-        app.tileDict[(row,col)].append(tile)
+        app.worldCollisionDict[(row,col)].append(tile)
+    for enemy in app.enemyList:
+        row = int(enemy.posY // 60)
+        col = int(enemy.posX // 60)
+        app.worldCollisionDict[(row, col)].append(enemy)
+        
+
           
 def inGame_setFrame(app):
-    if app.frameRight:
-        app.frameScroll -= app.frameSpeed
-    if app.frameLeft and app.frameScroll < 0:
-        app.frameScroll += app.frameSpeed 
+    if app.meir.posX < app.frameScroll + app.scrollMargin and app.frameScroll - app.scrollMargin > -1:
+        app.frameScroll = app.meir.posX - app.scrollMargin
+    if app.meir.posX > app.frameScroll + app.width - app.scrollMargin:
+        app.frameScroll = (app.meir.posX - app.width) + app.scrollMargin
 
 def inGame_drawLevel(app):
-    
-
+     
     for i in range(5):
-        drawImage(app.levelBackground,i * app.width + app.frameScroll, 0)
-    # for i in range((app.levelRows)):
-    #     drawLine(0, app.tileHeight * i, app.width, app.tileHeight * i)
-    # for i in range((app.levelCols)):
-    #     drawLine(app.tileWidth * i, 0, app.tileWidth * i, app.height)     
+        drawImage(app.levelBackground,i * app.width - app.frameScroll, 0)
+    for i in range((app.levelRows)):
+        drawLine(0, app.tileHeight * i, app.width, app.tileHeight * i)
+    for i in range((app.levelCols)):
+        drawLine(app.tileWidth * i, 0, app.tileWidth * i, app.height)     
 
-    for tile in app.tileList: 
-        
-        drawImage(tile.img, tile.x + app.frameScroll, tile.y, width=app.tileWidth, height=app.tileHeight) 
-           
+    for item in app.worldDrawData: 
+        if item.x >= app.frameScroll - 50 and item.x <= app.width + app.frameScroll:
+            drawImage(item.img, item.x - app.frameScroll, item.y, width=app.tileWidth, height=app.tileHeight)
+    for enemy in app.enemyList:
+        enemy.drawEnemy(app.frameScroll) 
+    app.meir.drawPlayer(app.frameScroll)           
+                 
     drawLabel(f'Distance to Win: {2500 - app.meir.posX}', 1100, 20, fill = 'white', size = 36)       
     drawLabel(f'Time Left: {app.gameTimeLimit - (int(time.time()) - app.gameStartTime)}', 1140, 60, fill = 'white', size = 36)
+
     
 def inGame_redrawAll(app):
 
-    if not app.playState:
-        drawMenu(app)
-    else:
         inGame_drawLevel(app)
-        app.meir.drawPlayer(app.frameScroll)     
-        
-        
+
 def inGame_onMousePress(app, mouseX, mouseY):
     if not app.playState and clickDistance(mouseX, mouseY, app.width//2 - app.startButtonWidth//2,
                                        app.height//2, app.startButtonWidth, app.startButtonHeight):
         app.playState = True
+    for value in app.worldCollisionDict.values():
+        if isinstance(value, Enemy):
+            print(value)
+            
 
 def inGame_onKeyHold(app, keys):
     app.meir.playerControls(keys, None)
@@ -303,12 +326,27 @@ def inGame_onKeyRelease(app, key):
         app.frameRight = False
     elif key == 'left':
         app.frameLeft = False  
+# def inGame_updateWorldData(app):
+#     row, col = app.meir.posY // 50, app.meir.posX // 50
+#     app.worldData[row][col] = 19
+#     for enemy in app.enemyList:
+#         row, col = enemy.posY // 50, enemy.posX // 50
+#         app.worldData[row][col] = 14
 
 def inGame_onStep(app):
+    
+    # inGame_updateWorldData(app)
     inGame_setFrame(app)
-    app.meir.updatePlayer() 
-    app.meir.calculateVelocity()
-    print(app.meir.posX)
+    app.meir.updatePlayer()
+    
+    app.level[int(app.meir.posY // 60) - 1][int(app.meir.posX // 60)] = 8
+    app.level[int(app.meir.prevPosY // 60) - 1][int(app.meir.prevPosX // 60)] = 20
+    
+    for enemy in app.enemyList:
+        if enemy.posX >= app.frameScroll - 50 and enemy.posX <= app.width + app.frameScroll: # for efficiency only making the ones in frame attack
+            enemy.updateEnemy(app.level)
+    if app.meir.alive == False:
+        setActiveScreen("gameOver")
     if app.meir.posX > 2500:
         setActiveScreen("gameOver")
     if time.time() - app.gameStartTime > app.gameTimeLimit:
