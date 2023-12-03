@@ -362,6 +362,7 @@ def inGame_onStep(app):
     if time.time() - app.gameStartTime > app.gameTimeLimit:
         app.meir.alive = False
         setActiveScreen("gameOver")
+        
 #
 # GAME OVER SCREEN
 # 
