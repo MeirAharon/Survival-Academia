@@ -74,7 +74,7 @@ def start_onStep(app):
 #LEVEL EDITOR
 #
 def levelEditor_createLevelEditor(app):
-    app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
+    app.levelBackground = openImage("assets/mountainLong.png")
     app.levelBackground = CMUImage(app.levelBackground)
     app.levelEditorScroll = 0
     app.levelEditorButtonNames = ["deselect", "back", "save", "delete", "load"]
@@ -208,8 +208,15 @@ def inGame_createLevel(app):
     app.gameTimeLimit = 450
     app.stepsPerSecond = 60
     app.charList = []
-    app.levelBackground = openImage("assets/sunsetBackgroundLevel.png")
-    app.levelBackground = CMUImage(app.levelBackground)
+    app.background = 'lightblue'
+    app.levelbackgroundBlueSky = openImage("assets/blueSky.png")
+    app.levelbackgroundBlueSky = CMUImage(app.levelbackgroundBlueSky)
+    app.levelBackgroundMountainLong = openImage("assets/mountainLong.png")
+    app.levelBackgroundMountainLong = CMUImage(app.levelBackgroundMountainLong)
+    app.levelBackgroundClouds = openImage("assets/cloudsLong.png")
+    app.levelBackgroundClouds = CMUImage(app.levelBackgroundClouds)
+    app.levelBackgroundBackMountainsLong = openImage("assets/backMountainsLong.png")
+    app.levelBackgroundBackMountainsLong = CMUImage(app.levelBackgroundBackMountainsLong)
     app.levelRows = 12
     app.levelCols = 60
     app.tileWidth =  60
@@ -280,13 +287,16 @@ def inGame_setFrame(app):
         app.frameScroll = (app.meir.posX - app.width) + app.scrollMargin
 
 def inGame_drawLevel(app):
-     
-    for i in range(5):
-        drawImage(app.levelBackground,i * app.width - app.frameScroll, 0)
-    for i in range((app.levelRows)):
-        drawLine(0, app.tileHeight * i, app.width, app.tileHeight * i)
-    for i in range((app.levelCols)):
-        drawLine(app.tileWidth * i, 0, app.tileWidth * i, app.height)     
+    
+    drawImage(app.levelBackgroundBackMountainsLong,-.1* app.frameScroll, 0)
+    drawImage(app.levelBackgroundClouds, -.7 * app.frameScroll, 0)
+    drawImage(app.levelBackgroundMountainLong, -.5 * app.frameScroll, 0)
+    
+
+    # for i in range((app.levelRows)):
+    #     drawLine(0, app.tileHeight * i, app.width, app.tileHeight * i)
+    # for i in range((app.levelCols)):
+    #     drawLine(app.tileWidth * i, 0, app.tileWidth * i, app.height)     
 
     for item in app.worldDrawData: 
         if item.x >= app.frameScroll - 50 and item.x <= app.width + app.frameScroll:
