@@ -51,43 +51,9 @@ class Enemy():
         self.row = self.posY // 60
         self.col = self.posX // 60
 
-        # for i in range(0, 8):
-        #     sprite = openImage(f"assets/EnemySprites/sprite{i}.png")
-        #     sprite = CMUImage(sprite)
-        #     self.sprites.append(sprite)
-        #     self.EnemyRectSize.append((sprite.image.width - self.movementSpeed, sprite.image.height - self.terminalVelocityY))
-        #     self.sprite = self.sprites[0]    
-
-        # self.width, self.height = self.EnemyRectSize[0]
-
-    
-    # def findPath(self, levelList, row, col):
-        
-    #     levelList = copy.deepcopy(levelList)
-    #     if (row < 0 or row >= len(levelList) or col < 0
-    #         or col >= len(levelList[0]) or levelList[row][col] < 0 or levelList[row][col] > 20 # write all legal tile numbers > <
-    #         ):
-    #             return False
-    #     if levelList[row][col] == 8:
-    #         return True
-        
-    #     levelList[row][col] = -1
-
-    #     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-
-    #     for dr, dc in directions:
-    #         newRow, newCol = row + dr, col + dc
-    #         if Enemy.findPath(self, levelList, newRow, newCol):
-    #             return True
-            
     
     def updateEnemy(self, levelList):
-        # if Enemy.findPath(self, levelList, self.row, self.col):
-        #     b ZX(self.posX, app.meir.posX)
-        #     if self.posX > app.meir.posX:
-        #         self.moveLeft = True
-        #     elif self.posX < app.meir.posX:
-        #         self.moveRight = True   
+         
         self.movesList = aStarAlgorithm(levelList, (int(self.posY // 60),int(self.posX // 60)), (int(app.meir.posY // 60),int(app.meir.posX // 60)))
         if self.movesList != None and len(self.movesList) > 1:
             x = tuple(x - y for x, y in zip(self.movesList[1], self.movesList[0]))
@@ -189,11 +155,6 @@ class Enemy():
 
                                     self.dx = 0
                                     
-                                    # if self.vX < 0:
-                                    #     self.dx = object.right() + (self.posX)
-                                    # elif self.vX > 0:
-                                    #     self.dx = (  ((self.posX + self.width)) - object.left()) 
-                                    # self.vx = 0
                                     return True
                         if int(self.posX + self.dx) // 60 != (self.posX // 60):
                             app.worldCollisionDict[(int(self.posY // 60),int(self.posX + self.dx // 60))] = self
@@ -215,17 +176,6 @@ class Enemy():
                                     self.dy = 0
                                     self.onGround = True
                                     
-                                    # if self.vY < 0:
-                                    #     self.vY = 0
-                                    #     self.dy = object.bottom() - self.posY
-                                        
-                                        
-                                    # elif self.vY >= 0:
-                                        
-                                    #     self.vY = 0
-                                    #     self.dy = object.top() - (self.posY + self.height)
-                                    #     self.dy = 0
-                                    #     self.onGround = True
         
                                 
     def rectanglesOverlap(left1, top1, width1, height1,
