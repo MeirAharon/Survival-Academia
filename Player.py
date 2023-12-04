@@ -168,6 +168,8 @@ class Player():
                                    
                                        
         if axis == 'top' or axis == 'bottom':
+            if self.posY + self.height > app.height:
+                self.alive = False
             col = int((self.posX)// app.tileWidth)
             row = int((self.posY + self.dy) // app.tileHeight)
             

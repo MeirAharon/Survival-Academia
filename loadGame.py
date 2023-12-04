@@ -18,6 +18,7 @@ def onAppStart(app):
     inGame_createCollisionBoard(app)
     levelEditor_createLevelEditor(app)
     gameOver_createScreen(app)
+    win_createScreen(app)
     app.playState = True
     app.spriteCounter = 0
     app.stepsPerSecond = 60
@@ -31,8 +32,8 @@ def start_createMenu(app):
     app.menuBackground = CMUImage(app.menuBackground)
 
     app.menuButtons = []
-    app.buttonNames = ["inGame", "options", "levelEditor", "character"]
-    for i in range(4):
+    app.buttonNames = ["inGame", "levelEditor"]
+    for i in range(2):
         buttonImage = openImage(f"assets\\menuButtons\\button{i}.png")
         imageWidth, imageHeight = buttonImage.width, buttonImage.height
         buttonImage = CMUImage(buttonImage)
@@ -41,7 +42,7 @@ def start_createMenu(app):
             x = app.width // 2 - imageWidth // 2
             y = app.height // 3 + imageHeight // 2
         else:
-            x = i * (app.width // 4) - imageWidth // 2
+            x = app.width // 2 - imageWidth // 2 
             y = app.height - app.height // 3
 
         app.menuButtons.append(Button(x, y, imageWidth, imageHeight, i, buttonImage, app.buttonNames[i]))
@@ -176,7 +177,6 @@ def levelEditor_saveLevel(app):
     level = open("level1.txt", "w")
     
     for row in app.tilesPlaced:
-        
         level.write(' '.join([str(item) for item in row])+'\n')
     level.close()
     level = open("level1.txt", "r")
@@ -185,19 +185,18 @@ def levelEditor_saveLevel(app):
 def levelEditor_loadLevel(app):
     app.tilesPlaced = []
     level = open("level1.txt", "r")
-    for row, line in enumerate(level):
+    for line in (level):
         # for col, char in enumerate(line.split()):
 
         app.tilesPlaced.append([int(char) for char in line.split()])            
     level.close()
     level = open("level1.txt", "r")
-
-    # for row in range(len(app.level)):
-    #     for col in range(len(app.level[row])):
-    #         if app.level[row][col] != 20:
-    #             x = int(col * app.tileWidth)
-    #             y = int(row * app.tileHeight)
-    #             app.tileList.append(Tile(x, y, app.level[row][col]))
+    
+    for row in range(len(app.tilesPlaced)):
+        for col in range(len(app.tilesPlaced[row])):
+            print(row,col)
+            if app.tilesPlaced[row][col] != 20:
+                app.worldCollisionDictionary[(row,col)] = app.tilesPlaced[row][col]
 
 #
 # IN_GAME SCREEN
@@ -279,7 +278,6 @@ def inGame_createCollisionBoard(app):
         app.worldCollisionDict[(row, col)].append(enemy)
         
 
-          
 def inGame_setFrame(app):
     if app.meir.posX < app.frameScroll + app.scrollMargin and app.frameScroll - app.scrollMargin > -1:
         app.frameScroll = app.meir.posX - app.scrollMargin
@@ -356,12 +354,24 @@ def inGame_onStep(app):
         if enemy.posX >= app.frameScroll - 50 and enemy.posX <= app.width + app.frameScroll: # for efficiency only making the ones in frame attack
             enemy.updateEnemy(app.level)
     if app.meir.alive == False:
+        inGame_createLevel(app)
+        inGame_createFrame(app)
+        inGame_createPlayer(app)
+        inGame_createEnemies(app)
+        inGame_createCollisionBoard(app)
         setActiveScreen("gameOver")
-    if app.meir.posX > 2500:
-        setActiveScreen("gameOver")
+        
+    if app.meir.posX > 3540:
+        inGame_createLevel(app)
+        inGame_createFrame(app)
+        inGame_createPlayer(app)
+        inGame_createEnemies(app)
+        inGame_createCollisionBoard(app)
+        setActiveScreen("win")
     if time.time() - app.gameStartTime > app.gameTimeLimit:
         app.meir.alive = False
         setActiveScreen("gameOver")
+    print(59*60)    
         
 #
 # GAME OVER SCREEN
@@ -370,11 +380,43 @@ def gameOver_createScreen(app):
     app.gameOverBackground = openImage("assets/sunsetBackgroundLevel.png")
     app.gameOverBackground = CMUImage(app.gameOverBackground)
     app.gameOverText = openImage("assets/gameOver.png")
-    app.gameOverText = CMUImage(app.gameOverText)              
+    app.gameOverText = CMUImage(app.gameOverText)  
+
+    buttonImage = openImage(f"assets/winButtons/button{1}.png" ) 
+    width, height = buttonImage.width, buttonImage.height  
+    buttonImage = CMUImage(buttonImage)
+    app.gameOverBackButton = Button(app.width // 2 - width // 2, (app.height - app.height // 5) - height, width, height, 0, buttonImage)
+
+
 def gameOver_redrawAll(app):
     
     drawImage(app.gameOverBackground, 0, 0)
-    drawImage(app.gameOverText, 0, 0)    
+    drawImage(app.gameOverText, 0, 0)  
+    drawImage(app.gameOverBackButton.img, app.gameOverBackButton.x, app.gameOverBackButton.y)
+
+def gameOver_onMousePress(app, mouseX, mouseY):
+    if app.gameOverBackButton.buttonClicked(mouseX, mouseY):
+        setActiveScreen("start")
+
+
+def win_createScreen(app):
+    app.winBackground = openImage("assets/winScreen.png")
+    app.winBackground = CMUImage(app.winBackground)  
+    
+    buttonImage = openImage(f"assets/winButtons/button{1}.png" ) 
+    width, height = buttonImage.width, buttonImage.height  
+    buttonImage = CMUImage(buttonImage)
+    app.winBackButton = Button(app.width // 2 - width // 1.5, (app.height - app.height // 5) - height, width, height, 0, buttonImage)
+
+def win_redrawAll(app):
+    
+    drawImage(app.winBackground, 0, 0)
+    drawImage(app.winBackButton.img, app.winBackButton.x, app.winBackButton.y)   
+
+def win_onMousePress(app, mouseX, mouseY):
+    if app.winBackButton.buttonClicked(mouseX, mouseY):
+        setActiveScreen("start")   
+
     
 def openImage(fileName):
         return Image.open(os.path.join(pathlib.Path(__file__).parent,fileName))

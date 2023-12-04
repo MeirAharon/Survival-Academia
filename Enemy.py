@@ -138,6 +138,10 @@ class Enemy():
             self.rangeStartCols = -1
             self.rangeEndCols = 2
     def checkCollisions(self, axis):
+        if self.posX < 1:
+            self.dx = 1
+        elif self.posX > 3540:
+            self.dx = -1   
 
         if axis == 'right':
             
