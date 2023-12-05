@@ -1,4 +1,4 @@
-# information for the A* algorithm was goten from eeksforGeeks and Nicholas Swift
+# information for the A* algorithm was taken from GeeksforGeeks and Nicholas Swift
 class Node():
 
     def __init__(self, parentNode=None, position=None):
