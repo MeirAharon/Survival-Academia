@@ -1,0 +1,3 @@
+Use arrow keys left and right to move accordingly and up arrow to jump. 
+in this version the tiktok monsters have difficulty jumping over blocks and cannot end the game when bumping into the player. 
+this is on purpose because I want to demonstrate the pathfinding algorithm. 
