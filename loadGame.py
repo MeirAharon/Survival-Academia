@@ -70,7 +70,7 @@ def start_onKeyRelease(app, key):
 
 def start_onStep(app):
     pass 
-    # app.meir.calculateVelocity()
+    
 #
 #LEVEL EDITOR
 #
@@ -334,16 +334,10 @@ def inGame_onKeyRelease(app, key):
         app.frameRight = False
     elif key == 'left':
         app.frameLeft = False  
-# def inGame_updateWorldData(app):
-#     row, col = app.meir.posY // 50, app.meir.posX // 50
-#     app.worldData[row][col] = 19
-#     for enemy in app.enemyList:
-#         row, col = enemy.posY // 50, enemy.posX // 50
-#         app.worldData[row][col] = 14
+
 
 def inGame_onStep(app):
     
-    # inGame_updateWorldData(app)
     inGame_setFrame(app)
     app.meir.updatePlayer()
     
@@ -353,6 +347,7 @@ def inGame_onStep(app):
     for enemy in app.enemyList:
         if enemy.posX >= app.frameScroll - 50 and enemy.posX <= app.width + app.frameScroll: # for efficiency only making the ones in frame attack
             enemy.updateEnemy(app.level)
+
     if app.meir.alive == False:
         inGame_createLevel(app)
         inGame_createFrame(app)
@@ -360,7 +355,7 @@ def inGame_onStep(app):
         inGame_createEnemies(app)
         inGame_createCollisionBoard(app)
         setActiveScreen("gameOver")
-        
+
     if app.meir.posX > 3540:
         inGame_createLevel(app)
         inGame_createFrame(app)
@@ -371,7 +366,7 @@ def inGame_onStep(app):
     if time.time() - app.gameStartTime > app.gameTimeLimit:
         app.meir.alive = False
         setActiveScreen("gameOver")
-    print(59*60)    
+        
         
 #
 # GAME OVER SCREEN
