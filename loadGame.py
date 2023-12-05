@@ -34,7 +34,7 @@ def start_createMenu(app):
     app.menuButtons = []
     app.buttonNames = ["inGame", "levelEditor"]
     for i in range(2):
-        buttonImage = openImage(f"assets\\menuButtons\\button{i}.png")
+        buttonImage = openImage(f"assets/menuButtons/button{i}.png")
         imageWidth, imageHeight = buttonImage.width, buttonImage.height
         buttonImage = CMUImage(buttonImage)
 
@@ -94,13 +94,13 @@ def levelEditor_createLevelEditor(app):
         
 
     for i in range(15):
-        tileImage = openImage(f"assets\\levelEditorButtons\\Tile_{i}.png")
+        tileImage = openImage(f"assets/levelEditorButtons/Tile_{i}.png")
         tileWidth, tileHeight = 50, 50
         tileImage = CMUImage(tileImage)
         app.editorTileButtons.append(Button(900 + (i*60 )%180, 50 + (i//3)*100, tileWidth, tileHeight, i, tileImage))
 
     for i in range(5):
-        buttonImage = openImage(f"assets\\levelEditorButtons\\button{i}.png" )   
+        buttonImage = openImage(f"assets/levelEditorButtons/button{i}.png" )   
         buttonWidth, buttonHeight = 100, 60
         buttonImage = CMUImage(buttonImage)
         imgName = app.levelEditorButtonNames[i]
@@ -122,7 +122,7 @@ def levelEditor_redrawAll(app):
     for col in range(app.editorCols):
         drawLine(col * 50 + app.levelEditorScroll, 0, col * 50 + app.levelEditorScroll, app.height)
     for tile in app.worldCollisionDictionary:
-        tileImage = openImage(f"assets\\levelEditorButtons\\Tile_{app.worldCollisionDictionary[tile]}.png")
+        tileImage = openImage(f"assets/levelEditorButtons/Tile_{app.worldCollisionDictionary[tile]}.png")
         tileWidth, tileHeight = 50, 50
         tileImage = CMUImage(tileImage)
         row, col = tile

@@ -9,7 +9,7 @@ class Tile():
     def __init__(self, x, y, imgNum):
         self.x = x
         self.y = y
-        self.img = openImage(f"assets\\Tiles\\Tile_{imgNum}.png")
+        self.img = openImage(f"assets/Tiles/Tile_{imgNum}.png")
         self.img = CMUImage(self.img) 
         self.height = 60
         self.width = 60
