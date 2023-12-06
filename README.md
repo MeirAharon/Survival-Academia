@@ -11,3 +11,5 @@ for easier play through you can  go to line 165 in the player file and turn off 
 
 nothing else needs to be installed for this game to run
 
+all attribution for art is in the assets file and any code is cited with where it is from.
+
