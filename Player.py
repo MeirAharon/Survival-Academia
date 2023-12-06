@@ -162,7 +162,7 @@ class Player():
                         if isinstance(object, Enemy):
                             if Player.rectanglesOverlap(self.posX + self.dx, self.posY, self.width, self.height, 
                                                             object.posX, object.posY, object.width, object.height):
-                                # self.alive = False
+                                self.alive = False
                                 self.dx = 0
 
                                    
